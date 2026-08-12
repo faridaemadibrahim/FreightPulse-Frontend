@@ -30,21 +30,16 @@ export default function RatesClient({ initialLanes }: RatesClientProps) {
     });
   }, [initialLanes, search, containerType]);
 
-  // Selected trade lane state (defaults to Singapore-Europe or Shanghai-Europe or first available)
-  const [selectedLane, setSelectedLane] = useState<LaneSummary>(() => {
-    return (
-      initialLanes.find((l) => l.trade_lane.includes("Singapore")) ||
-      initialLanes[0] || {
-        trade_lane: "Singapore-Europe",
-        container_type: "40ft",
-        current_rate_usd: 2650,
-        change_7d_pct: -2.1,
-        trend: "falling",
-        source: "Alphaliner",
-        rate_date: "2026-08-10",
-      }
-    );
+  // Selected trade lane state (defaults to first available lane from backend)
+  const [selectedLane, setSelectedLane] = useState<LaneSummary | null>(() => {
+    return initialLanes[0] || null;
   });
+
+  useEffect(() => {
+    if (!selectedLane && initialLanes.length > 0) {
+      setSelectedLane(initialLanes[0]);
+    }
+  }, [initialLanes, selectedLane]);
 
   const [compareData, setCompareData] = useState<RateCompareData | null>(null);
   const [historyData, setHistoryData] = useState<any[]>([]);
@@ -53,6 +48,7 @@ export default function RatesClient({ initialLanes }: RatesClientProps) {
   useEffect(() => {
     let isMounted = true;
     async function loadLaneData() {
+      if (!selectedLane) return;
       try {
         const [comp, detail] = await Promise.all([
           getRateCompare(selectedLane.trade_lane, selectedLane.container_type),
@@ -93,7 +89,7 @@ export default function RatesClient({ initialLanes }: RatesClientProps) {
         <div className="lg:col-span-2">
           <RateOverviewTable
             lanes={filteredLanes}
-            selectedLaneName={selectedLane.trade_lane}
+            selectedLaneName={selectedLane?.trade_lane}
             onSelectLane={(lane) => setSelectedLane(lane)}
           />
         </div>
@@ -101,8 +97,8 @@ export default function RatesClient({ initialLanes }: RatesClientProps) {
         <div className="lg:col-span-1">
           <RateCompareCard
             data={compareData}
-            lane={selectedLane.trade_lane}
-            currentRate={selectedLane.current_rate_usd}
+            lane={selectedLane?.trade_lane || ""}
+            currentRate={selectedLane?.current_rate_usd || 0}
           />
         </div>
       </div>
@@ -111,8 +107,8 @@ export default function RatesClient({ initialLanes }: RatesClientProps) {
       <div className="w-full pt-2">
         <RateTrendChart
           data={historyData.length > 0 ? historyData : undefined}
-          lane={selectedLane.trade_lane}
-          containerType={selectedLane.container_type}
+          lane={selectedLane?.trade_lane || ""}
+          containerType={selectedLane?.container_type || "40ft"}
         />
       </div>
     </div>

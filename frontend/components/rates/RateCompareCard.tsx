@@ -10,33 +10,32 @@ interface RateCompareCardProps {
   currentRate?: number;
 }
 
-const DEFAULT_COMPARE: RateCompareData = {
-  trade_lane: "Singapore-Europe",
-  container_type: "40ft",
-  current_rate_usd: 2650,
-  avg_7d: 2706,
-  avg_30d: 2562,
-  avg_90d: 2595,
-  vs_7d_pct: -2.1,
-  vs_30d_pct: 3.4,
-  vs_90d_pct: 2.1,
-};
-
 export default function RateCompareCard({
-  data = DEFAULT_COMPARE,
+  data,
   lane,
   currentRate,
 }: RateCompareCardProps) {
-  const compare = data || DEFAULT_COMPARE;
-
   const displayLane = useMemo(() => {
-    const rawLane = lane || compare.trade_lane || "Singapore → Europe";
-    return rawLane.replace("-", " → ");
-  }, [lane, compare.trade_lane]);
+    const rawLane = lane || data?.trade_lane || "";
+    return rawLane ? rawLane.replace("-", " → ") : "Select a Trade Lane";
+  }, [lane, data?.trade_lane]);
 
-  const displayRate = currentRate ?? compare.current_rate_usd ?? 2650;
+  const displayRate = currentRate ?? data?.current_rate_usd;
 
-  const renderPill = (label: string, diffPct: number) => {
+  const renderPill = (label: string, diffPct?: number) => {
+    if (diffPct === undefined || diffPct === null) {
+      return (
+        <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/60 border border-slate-200/50">
+          <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+            {label}
+          </span>
+          <span className="text-sm font-bold font-mono text-slate-400">
+            --
+          </span>
+        </div>
+      );
+    }
+
     const isPositive = diffPct > 0;
     const isNegative = diffPct < 0;
 
@@ -77,15 +76,15 @@ export default function RateCompareCard({
               Current Rate
             </p>
             <p className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white">
-              ${displayRate.toLocaleString()}
+              {displayRate !== undefined ? `$${displayRate.toLocaleString()}` : "--"}
             </p>
           </div>
 
           {/* Benchmark Comparison Rows */}
           <div className="space-y-2.5">
-            {renderPill("vs 7d Avg", compare.vs_7d_pct)}
-            {renderPill("vs 30d Avg", compare.vs_30d_pct)}
-            {renderPill("vs 90d Avg", compare.vs_90d_pct)}
+            {renderPill("vs 7d Avg", data?.vs_7d_pct)}
+            {renderPill("vs 30d Avg", data?.vs_30d_pct)}
+            {renderPill("vs 90d Avg", data?.vs_90d_pct)}
           </div>
         </div>
 
@@ -104,3 +103,4 @@ export default function RateCompareCard({
 }
 
 export { RateCompareCard };
+

@@ -20,24 +20,6 @@ interface RateTrendChartProps {
   containerType?: string;
 }
 
-const DEFAULT_DATA: RatePoint[] = [
-  { date: "2026-08-01", rate_usd: 2720, avg_7d_usd: 2735, avg_30d_usd: 2770 },
-  { date: "2026-08-03", rate_usd: 2740, avg_7d_usd: 2745, avg_30d_usd: 2775 },
-  { date: "2026-08-05", rate_usd: 2700, avg_7d_usd: 2730, avg_30d_usd: 2780 },
-  { date: "2026-08-07", rate_usd: 2750, avg_7d_usd: 2740, avg_30d_usd: 2790 },
-  { date: "2026-08-09", rate_usd: 2780, avg_7d_usd: 2755, avg_30d_usd: 2800 },
-  { date: "2026-08-11", rate_usd: 2810, avg_7d_usd: 2765, avg_30d_usd: 2805 },
-  { date: "2026-08-13", rate_usd: 2800, avg_7d_usd: 2770, avg_30d_usd: 2785 },
-  { date: "2026-08-15", rate_usd: 2840, avg_7d_usd: 2805, avg_30d_usd: 2810 },
-  { date: "2026-08-17", rate_usd: 2875, avg_7d_usd: 2830, avg_30d_usd: 2825 },
-  { date: "2026-08-19", rate_usd: 2860, avg_7d_usd: 2840, avg_30d_usd: 2835 },
-  { date: "2026-08-21", rate_usd: 2910, avg_7d_usd: 2870, avg_30d_usd: 2845 },
-  { date: "2026-08-23", rate_usd: 2920, avg_7d_usd: 2885, avg_30d_usd: 2855 },
-  { date: "2026-08-25", rate_usd: 2895, avg_7d_usd: 2890, avg_30d_usd: 2860 },
-  { date: "2026-08-27", rate_usd: 2870, avg_7d_usd: 2880, avg_30d_usd: 2865 },
-  { date: "2026-08-29", rate_usd: 2890, avg_7d_usd: 2885, avg_30d_usd: 2870 },
-];
-
 function CustomTooltip({ active, payload, label }: any) {
   if (active && payload && payload.length) {
     let dateStr = label;
@@ -78,18 +60,18 @@ function CustomTooltip({ active, payload, label }: any) {
 }
 
 export default function RateTrendChart({
-  data = DEFAULT_DATA,
-  lane = "Singapore-Europe",
+  data = [],
+  lane = "",
 }: RateTrendChartProps) {
   // Ensure trade lane subtitle formatting (e.g. "Singapore → Europe")
   const laneFormatted = useMemo(() => {
-    if (!lane) return "Singapore → Europe";
+    if (!lane) return "No Lane Selected";
     return lane.replace("-", " → ");
   }, [lane]);
 
-  // Compute fallback 7d & 30d averages if not present in payload
+  // Compute 7d & 30d averages if not present in payload
   const chartData = useMemo(() => {
-    const raw = data && data.length > 0 ? data : DEFAULT_DATA;
+    const raw = data || [];
     return raw.map((point, index, array) => {
       let avg7 = point.avg_7d_usd;
       let avg30 = point.avg_30d_usd;
@@ -111,6 +93,7 @@ export default function RateTrendChart({
       };
     });
   }, [data]);
+
 
   return (
     <Card className="w-full bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
