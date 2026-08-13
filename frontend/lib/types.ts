@@ -69,7 +69,14 @@ export type AdvisoryType =
   | "capacity"
   | "pricing";
 
-export type AdvisorySeverity = "low" | "medium" | "high" | "critical" | "elevated" | "advisory" | "normal";
+export type AdvisorySeverity =
+  | "low"
+  | "medium"
+  | "high"
+  | "critical"
+  | "elevated"
+  | "advisory"
+  | "normal";
 
 export interface CarrierAdvisory {
   id: string;
@@ -83,4 +90,25 @@ export interface CarrierAdvisory {
   source_url: string;
   impact_severity: AdvisorySeverity;
   published_at: string;
+}
+export type AlertType =
+  | "rate_spike"
+  | "rate_drop"
+  | "port_congestion"
+  | "carrier_advisory";
+
+export type AlertSeverity = "critical" | "elevated" | "info";
+
+export interface Alert {
+  id: string;
+  type: AlertType;
+  severity: AlertSeverity;
+  is_new: boolean;
+  is_read: boolean;
+  title: string;
+  message: string;
+  location_label: string;
+  magnitude_pct?: number;
+  index_value?: number;
+  created_at: string;
 }

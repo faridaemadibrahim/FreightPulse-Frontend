@@ -10,6 +10,7 @@ export async function getCarrierAdvisories(): Promise<CarrierAdvisory[]> {
   try {
     const response = await apiClient.get("/carriers/advisories");
     const data = response.data;
+    console.log("[FreightPulse] Fetched live /carriers/advisories:", data);
     if (Array.isArray(data)) {
       return data;
     }
@@ -17,7 +18,9 @@ export async function getCarrierAdvisories(): Promise<CarrierAdvisory[]> {
   } catch (error: any) {
     console.error(
       "[FreightPulse Error] Failed to fetch live /carriers/advisories:",
-      error?.response ? `${error.response.status} ${error.response.statusText}` : error?.message
+      error?.response
+        ? `${error.response.status} ${error.response.statusText}`
+        : error?.message,
     );
     return [];
   }
