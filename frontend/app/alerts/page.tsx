@@ -1,5 +1,8 @@
-import React from "react";
+import { getAlerts } from "@/lib/api/alerts";
+import AlertsClient from "@/components/alerts/AlertsClient";
 
-export default function Alerts() {
-  return <div>alerts</div>;
+export default async function AlertsPage() {
+  const alerts = await getAlerts();
+
+  return <AlertsClient initialAlerts={alerts} />;
 }

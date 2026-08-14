@@ -1,7 +1,7 @@
 "use client";
 
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Bell } from "lucide-react";
+import AlertsBellDropdown from "@/components/alerts/AlertsBellDropdown";
 
 export default function AppHeader() {
   return (
@@ -11,9 +11,7 @@ export default function AppHeader() {
         <h1 className="text-xl font-semibold">FreightPulse</h1>
       </div>
 
-      <button className="rounded-lg p-2 hover:bg-muted">
-        <Bell className="h-5 w-5" />
-      </button>
+      <AlertsBellDropdown />
     </header>
   );
 }

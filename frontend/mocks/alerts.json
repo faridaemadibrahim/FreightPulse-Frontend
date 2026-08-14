@@ -1,0 +1,72 @@
+[
+  {
+    "id": "1",
+    "type": "rate_spike",
+    "severity": "critical",
+    "is_new": true,
+    "is_read": false,
+    "title": "Rate spike detected",
+    "message": "Shanghai → Rotterdam rates moved above your 5% alert threshold.",
+    "location_label": "Shanghai → Rotterdam",
+    "magnitude_pct": 8.4,
+    "created_at": "2026-08-13T10:42:00.000Z"
+  },
+  {
+    "id": "2",
+    "type": "port_congestion",
+    "severity": "elevated",
+    "is_new": true,
+    "is_read": false,
+    "title": "Port congestion elevated",
+    "message": "Vessel queues at Shanghai are increasing. Average dwell time is now 7.1 days.",
+    "location_label": "Shanghai",
+    "index_value": 88,
+    "created_at": "2026-08-13T08:00:00.000Z"
+  },
+  {
+    "id": "3",
+    "type": "carrier_advisory",
+    "severity": "elevated",
+    "is_new": true,
+    "is_read": false,
+    "title": "Carrier advisory received",
+    "message": "Maersk announced temporary capacity reductions on Asia–Mediterranean services.",
+    "location_label": "Asia → Europe",
+    "created_at": "2026-08-13T06:00:00.000Z"
+  },
+  {
+    "id": "4",
+    "type": "rate_drop",
+    "severity": "info",
+    "is_new": false,
+    "is_read": false,
+    "title": "Rate drop detected",
+    "message": "Singapore → Europe rates have fallen below the 7-day benchmark.",
+    "location_label": "Singapore → Europe",
+    "magnitude_pct": -3.1,
+    "created_at": "2026-08-12T09:00:00.000Z"
+  },
+  {
+    "id": "5",
+    "type": "port_congestion",
+    "severity": "info",
+    "is_new": false,
+    "is_read": false,
+    "title": "Port conditions improving",
+    "message": "Jebel Ali congestion index has returned to normal operating range.",
+    "location_label": "Jebel Ali",
+    "index_value": 34,
+    "created_at": "2026-08-12T07:00:00.000Z"
+  },
+  {
+    "id": "6",
+    "type": "carrier_advisory",
+    "severity": "info",
+    "is_new": false,
+    "is_read": true,
+    "title": "Schedule reliability updated",
+    "message": "CMA CGM published updated on-time performance metrics for Q3 services.",
+    "location_label": "Global",
+    "created_at": "2026-08-11T12:00:00.000Z"
+  }
+]
