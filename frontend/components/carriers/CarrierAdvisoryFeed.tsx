@@ -10,7 +10,7 @@ type Props = {
 export default function CarrierAdvisoryFeed({ advisories }: Props) {
   const sortedAdvisories = [...advisories].sort(
     (a, b) =>
-      new Date(b.published_at).getTime() - new Date(a.published_at).getTime()
+      new Date(b.published_at).getTime() - new Date(a.published_at).getTime(),
   );
 
   // Helper for Carrier Logo Avatar Color
@@ -26,7 +26,10 @@ export default function CarrierAdvisoryFeed({ advisories }: Props) {
   };
 
   // Helper for Severity / Status Badge styling
-  const getSeverityStyle = (severity: string) => {
+  const getSeverityStyle = (severity: string | null | undefined) => {
+    if (!severity) {
+      return "bg-slate-100 text-slate-700 border-slate-200"; // fallback محايد
+    }
     const s = severity.toLowerCase();
     if (s === "elevated") {
       return "bg-amber-100/90 text-amber-800 border-amber-200/80";
@@ -106,7 +109,9 @@ export default function CarrierAdvisoryFeed({ advisories }: Props) {
       {/* Header Bar */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">Latest advisories</h2>
+          <h2 className="text-xl font-bold text-slate-900">
+            Latest advisories
+          </h2>
           <p className="mt-0.5 text-sm text-slate-500">
             {advisories.length} updates matching your filters
           </p>
@@ -156,7 +161,7 @@ export default function CarrierAdvisoryFeed({ advisories }: Props) {
                 {/* Severity Status Pill */}
                 <span
                   className={`rounded-full border px-3 py-0.5 text-xs font-semibold capitalize ${getSeverityStyle(
-                    advisory.impact_severity
+                    advisory.impact_severity,
                   )}`}
                 >
                   {advisory.impact_severity}
@@ -174,18 +179,19 @@ export default function CarrierAdvisoryFeed({ advisories }: Props) {
               </p>
 
               {/* Affected Route Lanes Pills */}
-              {advisory.affected_lanes && advisory.affected_lanes.length > 0 && (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {advisory.affected_lanes.map((lane) => (
-                    <span
-                      key={lane}
-                      className="rounded-lg border border-slate-200/80 bg-slate-100/80 px-3 py-1.5 text-xs font-medium text-slate-700 inline-flex items-center gap-1"
-                    >
-                      {lane.includes("→") ? lane : lane.replace("-", " → ")}
-                    </span>
-                  ))}
-                </div>
-              )}
+              {advisory.affected_lanes &&
+                advisory.affected_lanes.length > 0 && (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {advisory.affected_lanes.map((lane) => (
+                      <span
+                        key={lane}
+                        className="rounded-lg border border-slate-200/80 bg-slate-100/80 px-3 py-1.5 text-xs font-medium text-slate-700 inline-flex items-center gap-1"
+                      >
+                        {lane.includes("→") ? lane : lane.replace("-", " → ")}
+                      </span>
+                    ))}
+                  </div>
+                )}
 
               {/* Footer Metadata Row */}
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3.5 text-xs text-slate-500">
@@ -201,7 +207,7 @@ export default function CarrierAdvisoryFeed({ advisories }: Props) {
                     <Calendar className="h-3.5 w-3.5 text-slate-400" />
                     {formatEffectiveDate(
                       advisory.effective_date,
-                      advisory.effective_end_date
+                      advisory.effective_end_date,
                     )}
                   </span>
                 </div>
