@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk, Geist_Mono } from "next/font/google";
-
+import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
@@ -50,6 +50,7 @@ export default function RootLayout({
             </SidebarInset>{" "}
           </SidebarProvider>
         </TooltipProvider>
+        <Toaster position="bottom-right" />
       </body>
     </html>
   );
