@@ -112,3 +112,31 @@ export interface Alert {
   index_value?: number;
   created_at: string;
 }
+export interface DashboardLaneSummary {
+  trade_lane: string;
+  current_rate: number;
+  trend: RateTrend;
+  change_7d_pct: number;
+}
+
+export interface DashboardPortSummary {
+  port_code: string;
+  port_name: string;
+  severity: string;
+  congestion_index: number;
+}
+
+export interface DashboardAdvisorySummary {
+  carrier: string;
+  title: string;
+  advisory_type: string;
+  published_at: string;
+}
+
+export interface DashboardData {
+  tracked_lanes_count: number;
+  lanes_summary: DashboardLaneSummary[];
+  port_congestion_overview: DashboardPortSummary[];
+  recent_advisories: DashboardAdvisorySummary[];
+  unread_alert_count: number;
+}

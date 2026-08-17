@@ -1,4 +1,4 @@
-import { apiClient } from "./client";
+import { apiClient, isMockMode } from "./client";
 import { Port, PortCongestionLevel } from "@/lib/types";
 
 // Static fallback coordinates for ports missing lat/lng from the API
@@ -8,6 +8,14 @@ const FALLBACK_COORDS: Record<string, { latitude: number; longitude: number }> =
     EGALY: { latitude: 31.2001, longitude: 29.9187 }, // Alexandria
     EGSKH: { latitude: 29.6011, longitude: 32.3428 }, // Sokhna
   };
+
+const MOCK_PORTS: Port[] = [
+  { id: "1", code: "CNSHA", name: "Shanghai", country: "China", latitude: 31.2304, longitude: 121.4737, congestion_level: "low", congestion_pct: 12, vessels_waiting: 5 },
+  { id: "2", code: "NLRTM", name: "Rotterdam", country: "Netherlands", latitude: 51.9244, longitude: 4.4777, congestion_level: "medium", congestion_pct: 45, vessels_waiting: 15 },
+  { id: "3", code: "EGALY", name: "Alexandria", country: "Egypt", latitude: 31.2001, longitude: 29.9187, congestion_level: "high", congestion_pct: 78, vessels_waiting: 28 },
+  { id: "4", code: "EGSKH", name: "Sokhna", country: "Egypt", latitude: 29.6011, longitude: 32.3428, congestion_level: "normal", congestion_pct: 20, vessels_waiting: 8 },
+  { id: "5", code: "AEJEA", name: "Jebel Ali", country: "UAE", latitude: 25.0112, longitude: 55.0617, congestion_level: "elevated", congestion_pct: 60, vessels_waiting: 19 },
+];
 
 function mapApiPortToPort(apiPort: {
   port_code: string;
@@ -36,6 +44,9 @@ function mapApiPortToPort(apiPort: {
 }
 
 export async function getPorts(): Promise<Port[]> {
+  if (isMockMode()) {
+    return MOCK_PORTS;
+  }
   const res = await apiClient.get("/ports/congestion-map");
   const apiPorts = res.data.ports;
   return apiPorts.map(mapApiPortToPort);
