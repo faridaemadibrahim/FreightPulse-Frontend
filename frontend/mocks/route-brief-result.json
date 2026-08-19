@@ -1,0 +1,27 @@
+{
+  "brief_id": "brief_abc123",
+  "origin": "Shanghai",
+  "destination": "Rotterdam",
+  "cargo_type": "40ft",
+  "prepared_date": "2026-08-27",
+  "valid_days": 14,
+
+  "executive_recommendation": "Proceed with the direct service via the Asia–North Europe network, but secure equipment at least 7 days before cut-off. Current rates are above the 30-day average while Shanghai congestion remains elevated. A flexible booking window provides the best balance between cost and schedule certainty.",
+
+  "recommended_action": "Book a primary sailing from Shanghai this week and keep one alternative departure window open. Avoid routing through a transshipment port with a congestion index above 75.",
+
+  "market_outlook": "Rates are expected to remain firm in the near term as carrier capacity is managed across the corridor. Port conditions should stabilize gradually, but schedule reliability may remain variable during the next two weeks.",
+
+  "operational_watchlist": [
+    "Equipment availability is tightening at origin terminals.",
+    "Allow an additional 1-2 days for terminal dwell at destination.",
+    "Review carrier blank-sailing notices before finalizing the booking."
+  ],
+
+  "recommendation": "ship_now",
+  "risk_level": "medium",
+  "rate_outlook": "firming",
+  "confidence": 86,
+
+  "brief_markdown": "# Route Intelligence Brief\n\nShanghai → Rotterdam"
+}

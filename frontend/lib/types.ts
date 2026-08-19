@@ -112,3 +112,56 @@ export interface Alert {
   index_value?: number;
   created_at: string;
 }
+export interface DashboardLaneSummary {
+  trade_lane: string;
+  current_rate: number;
+  trend: RateTrend;
+  change_7d_pct: number;
+}
+
+export interface DashboardPortSummary {
+  port_code: string;
+  port_name: string;
+  severity: string;
+  congestion_index: number;
+}
+
+export interface DashboardAdvisorySummary {
+  carrier: string;
+  title: string;
+  advisory_type: string;
+  published_at: string;
+}
+
+export interface DashboardData {
+  tracked_lanes_count: number;
+  lanes_summary: DashboardLaneSummary[];
+  port_congestion_overview: DashboardPortSummary[];
+  recent_advisories: DashboardAdvisorySummary[];
+  unread_alert_count: number;
+}
+export type BriefRecommendation = "ship_now" | "wait" | "reroute";
+export type BriefRiskLevel = "low" | "medium" | "high";
+export type BriefRateOutlook = "firming" | "softening" | "stable";
+
+export interface RouteBriefResultData {
+  brief_id: string;
+  origin: string;
+  destination: string;
+  cargo_type: string; // "40ft" | "20ft"
+  prepared_date: string;
+  valid_days: number;
+
+  executive_recommendation: string; // الفقرة الأولى تحت "Executive recommendation"
+  recommended_action: string; // نص الصندوق الأزرق
+
+  market_outlook: string; // فقرة "Market outlook"
+  operational_watchlist: string[]; // نقاط "Operational watchlist"
+
+  recommendation: BriefRecommendation;
+  risk_level: BriefRiskLevel;
+  rate_outlook: BriefRateOutlook;
+  confidence: number; // 0-100
+
+  brief_markdown: string; // النص الكامل لو حبينا نستخدمه كـ fallback
+}

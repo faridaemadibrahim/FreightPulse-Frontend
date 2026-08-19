@@ -4,7 +4,8 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Rates | FreightPulse Intelligence",
-  description: "Real-time rate tracking and trend analysis for all shipping lanes.",
+  description:
+    "Real-time rate tracking and trend analysis for all shipping lanes.",
 };
 
 export default async function RatesPage() {

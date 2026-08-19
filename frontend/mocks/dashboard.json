@@ -1,0 +1,70 @@
+{
+  "tracked_lanes_count": 47,
+  "lanes_summary": [
+    {
+      "trade_lane": "Shanghai → Rotterdam",
+      "current_rate": 2850,
+      "trend": "rising",
+      "change_7d_pct": 5.2
+    },
+    {
+      "trade_lane": "Singapore → Europe",
+      "current_rate": 2650,
+      "trend": "falling",
+      "change_7d_pct": -2.1
+    },
+    {
+      "trade_lane": "Hong Kong → Dubai",
+      "current_rate": 1950,
+      "trend": "rising",
+      "change_7d_pct": 1.8
+    },
+    {
+      "trade_lane": "Port Said → Asia",
+      "current_rate": 2200,
+      "trend": "falling",
+      "change_7d_pct": -3.5
+    }
+  ],
+  "port_congestion_overview": [
+    {
+      "port_code": "SGSIN",
+      "port_name": "Singapore",
+      "severity": "elevated",
+      "congestion_index": 78
+    },
+    {
+      "port_code": "AEJEA",
+      "port_name": "Dubai",
+      "severity": "elevated",
+      "congestion_index": 64
+    },
+    {
+      "port_code": "NLRTM",
+      "port_name": "Rotterdam",
+      "severity": "normal",
+      "congestion_index": 51
+    },
+    {
+      "port_code": "CNSHA",
+      "port_name": "Shanghai",
+      "severity": "critical",
+      "congestion_index": 88
+    },
+    {
+      "port_code": "HKHKG",
+      "port_name": "Hong Kong",
+      "severity": "elevated",
+      "congestion_index": 70
+    }
+  ],
+  "recent_advisories": [
+    {
+      "carrier": "Maersk",
+      "title": "Maersk announced capacity reductions",
+      "advisory_type": "capacity",
+      "published_at": "2026-08-15T06:00:00.000Z"
+    }
+  ],
+  "unread_alert_count": 3
+}
