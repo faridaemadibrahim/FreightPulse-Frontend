@@ -140,3 +140,28 @@ export interface DashboardData {
   recent_advisories: DashboardAdvisorySummary[];
   unread_alert_count: number;
 }
+export type BriefRecommendation = "ship_now" | "wait" | "reroute";
+export type BriefRiskLevel = "low" | "medium" | "high";
+export type BriefRateOutlook = "firming" | "softening" | "stable";
+
+export interface RouteBriefResultData {
+  brief_id: string;
+  origin: string;
+  destination: string;
+  cargo_type: string; // "40ft" | "20ft"
+  prepared_date: string;
+  valid_days: number;
+
+  executive_recommendation: string; // الفقرة الأولى تحت "Executive recommendation"
+  recommended_action: string; // نص الصندوق الأزرق
+
+  market_outlook: string; // فقرة "Market outlook"
+  operational_watchlist: string[]; // نقاط "Operational watchlist"
+
+  recommendation: BriefRecommendation;
+  risk_level: BriefRiskLevel;
+  rate_outlook: BriefRateOutlook;
+  confidence: number; // 0-100
+
+  brief_markdown: string; // النص الكامل لو حبينا نستخدمه كـ fallback
+}

@@ -7,7 +7,6 @@ export default function SummaryCards({
 }: {
   initialData: DashboardData;
 }) {
-  // نحسب متوسط نسبة التغيير عبر كل الخطوط
   const avgRateChange =
     initialData.lanes_summary.length > 0
       ? initialData.lanes_summary.reduce(
