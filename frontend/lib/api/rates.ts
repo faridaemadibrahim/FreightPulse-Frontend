@@ -15,7 +15,6 @@ export async function getRatesAll(): Promise<LaneSummary[]> {
   try {
     const response = await apiClient.get("/rates/all");
     const data = response.data;
-    console.log("[FreightPulse] Received data:", data);
     if (Array.isArray(data)) {
       return data;
     }
@@ -23,7 +22,9 @@ export async function getRatesAll(): Promise<LaneSummary[]> {
   } catch (error: any) {
     console.error(
       "[FreightPulse Error] Failed to fetch /rates/all from backend:",
-      error?.response ? `${error.response.status} ${error.response.statusText}` : error?.message
+      error?.response
+        ? `${error.response.status} ${error.response.statusText}`
+        : error?.message,
     );
     return [];
   }
@@ -37,19 +38,20 @@ export async function getRatesAll(): Promise<LaneSummary[]> {
  */
 export async function getRateLane(
   lane: string,
-  containerType: string = "40ft"
+  containerType: string = "40ft",
 ): Promise<RateLaneDetail> {
   const encoded = encodeURIComponent(lane);
   try {
     const response = await apiClient.get(`/rates/${encoded}`, {
       params: { container_type: containerType },
     });
-    console.log("rate lane details", response.data);
     return response.data;
   } catch (error: any) {
     console.warn(
       `[FreightPulse Warning] Failed to fetch rate lane details for ${lane} (${containerType}):`,
-      error?.response ? `${error.response.status} ${error.response.statusText}` : error?.message
+      error?.response
+        ? `${error.response.status} ${error.response.statusText}`
+        : error?.message,
     );
     return {
       trade_lane: lane,
@@ -69,18 +71,19 @@ export async function getRateLane(
  */
 export async function getRateCompare(
   lane: string,
-  containerType: string = "40ft"
+  containerType: string = "40ft",
 ): Promise<RateCompareData | null> {
   try {
     const response = await apiClient.get("/rates/compare", {
       params: { trade_lane: lane, container_type: containerType },
     });
-    console.log("compare", response.data);
     return response.data;
   } catch (error: any) {
     console.warn(
       `[FreightPulse Warning] Failed to fetch rate compare for ${lane} (${containerType}):`,
-      error?.response ? `${error.response.status} ${error.response.statusText}` : error?.message
+      error?.response
+        ? `${error.response.status} ${error.response.statusText}`
+        : error?.message,
     );
     return null;
   }
