@@ -9,7 +9,6 @@ export async function getDashboard(): Promise<DashboardData> {
 
   try {
     const response = await apiClient.get("/dashboard");
-    console.log("[FreightPulse] Fetched live /dashboard:", response.data);
     return response.data;
   } catch (error: unknown) {
     const err = error as {
