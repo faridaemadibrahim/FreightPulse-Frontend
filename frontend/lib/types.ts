@@ -132,10 +132,14 @@ export interface DashboardAdvisorySummary {
   advisory_type: string;
   published_at: string;
 }
-
+export interface DashboardRateTrendPoint {
+  date: string;
+  avg_rate_usd: number;
+}
 export interface DashboardData {
   tracked_lanes_count: number;
   lanes_summary: DashboardLaneSummary[];
+  rate_trend_30d: DashboardRateTrendPoint[];
   port_congestion_overview: DashboardPortSummary[];
   recent_advisories: DashboardAdvisorySummary[];
   unread_alert_count: number;

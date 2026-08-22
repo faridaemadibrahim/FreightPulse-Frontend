@@ -1,8 +1,6 @@
 import { apiClient, isMockMode } from "./client";
 import { Port, PortCongestionLevel } from "@/lib/types";
 
-// Static fallback coordinates for ports missing lat/lng from the API
-// (still needed — Alexandria/Sokhna were returning null lat/lng)
 const FALLBACK_COORDS: Record<string, { latitude: number; longitude: number }> =
   {
     EGALY: { latitude: 31.2001, longitude: 29.9187 }, // Alexandria

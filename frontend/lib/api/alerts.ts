@@ -10,7 +10,6 @@ export async function getAlerts(): Promise<Alert[]> {
   try {
     const response = await apiClient.get("/alerts");
     const data = response.data;
-    console.log("[FreightPulse] Fetched live /alerts:", data);
     if (Array.isArray(data)) {
       return data;
     }
