@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Alert, AlertSeverity, AlertType } from "@/lib/types";
+import { useAlertStore } from "@/stores/alertStore";
 import AlertSummaryCards from "./AlertSummaryCards";
 import AlertFilters from "./AlertFilters";
 import AlertListItem from "./AlertListItem";
@@ -9,28 +10,23 @@ import AlertSourcesPanel from "./AlertSourcesPanel";
 import { Check } from "lucide-react";
 import { toast } from "sonner";
 import { showAlertToast } from "@/lib/toast";
-type Props = {
-  initialAlerts: Alert[];
-};
 
-export default function AlertsClient({ initialAlerts }: Props) {
+export default function AlertsClient() {
   const [tab, setTab] = useState<"all" | "unread">("all");
   const [severityFilter, setSeverityFilter] = useState<"all" | AlertSeverity>(
     "all",
   );
   const [typeFilter, setTypeFilter] = useState<"all" | AlertType>("all");
 
-  // alerts is the mutable copy we actually read/render from.
-  // initialAlerts (the prop) is only used to seed this state once.
-  const [alerts, setAlerts] = useState<Alert[]>(initialAlerts);
+  const alerts = useAlertStore((s) => s.alerts);
+  const markAsRead = useAlertStore((s) => s.markAsRead);
+  const markAllAsRead = useAlertStore((s) => s.markAllAsRead);
 
   const handleMarkRead = (id: string) => {
-    setAlerts((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, is_read: true } : a)),
-    );
+    markAsRead(id);
   };
   const handleMarkAllRead = () => {
-    setAlerts((prev) => prev.map((a) => ({ ...a, is_read: true })));
+    markAllAsRead();
   };
   const filteredAlerts = useMemo(() => {
     return alerts.filter((alert) => {

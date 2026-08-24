@@ -3,6 +3,7 @@ import SummaryCards from "./SummaryCards";
 import PortCongestionChart from "./PortCongestionChart";
 import TrackedLanesList from "./TrackedLanesList";
 import RecentAlertsList from "./RecentAlertsList";
+import DashboardRateTrendChart from "./DashboardRateTrendChart";
 export default function DashboardClient({
   initialData,
 }: {
@@ -21,9 +22,7 @@ export default function DashboardClient({
       <SummaryCards initialData={initialData} />
       <div className="grid gap-4 lg:grid-cols-2">
         {/* هنحط هنا الـ Rate Trend chart لاحقًا */}
-        <div className="rounded-2xl border bg-white p-5 flex items-center justify-center text-sm text-slate-400 h-80">
-          Rate trend data coming soon
-        </div>
+        <DashboardRateTrendChart data={initialData.rate_trend_30d} />
 
         <PortCongestionChart ports={initialData.port_congestion_overview} />
       </div>

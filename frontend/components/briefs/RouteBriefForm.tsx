@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Port } from "@/lib/types";
+import { Port, CarrierInfo } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { RouteBriefRequest } from "@/lib/api/route-brief";
 import {
   Select,
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import {
   MapPin,
+  Ship,
   TrendingUp,
   ShieldAlert,
   Lightbulb,
@@ -22,19 +23,26 @@ import {
 
 interface RouteBriefFormProps {
   ports: Port[];
+  carriers: CarrierInfo[];
   onSubmit: (request: RouteBriefRequest) => void;
   isLoading?: boolean;
 }
 
-export default function RouteBriefForm({ ports, onSubmit, isLoading = false }: RouteBriefFormProps) {
+export default function RouteBriefForm({
+  ports,
+  carriers,
+  onSubmit,
+  isLoading = false,
+}: RouteBriefFormProps) {
   const [origin, setOrigin] = useState<string>("");
   const [destination, setDestination] = useState<string>("");
+  const [carrier, setCarrier] = useState<string>("");
   const [containerType, setContainerType] = useState<"20ft" | "40ft">("40ft");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!origin || !destination) {
-      alert("Please select both Origin and Destination ports.");
+    if (!origin || !destination || !carrier) {
+      alert("Please select an origin, destination, and carrier.");
       return;
     }
     if (origin === destination) {
@@ -44,7 +52,8 @@ export default function RouteBriefForm({ ports, onSubmit, isLoading = false }: R
     onSubmit({
       origin,
       destination,
-      cargo_type: containerType === "20ft" ? "TEU" : "FEU",
+      carrier,
+      cargo_type: containerType,
     });
   };
 
@@ -52,7 +61,10 @@ export default function RouteBriefForm({ ports, onSubmit, isLoading = false }: R
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch w-full max-w-7xl mx-auto p-1">
       {/* Left side: The Interactive Form */}
       <Card className="lg:col-span-2 shadow-xs border border-border">
-        <form onSubmit={handleSubmit} className="flex flex-col h-full justify-between p-6">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col h-full justify-between p-6"
+        >
           <div className="space-y-6">
             {/* Header section with Icon */}
             <div className="flex items-start gap-4">
@@ -64,19 +76,25 @@ export default function RouteBriefForm({ ports, onSubmit, isLoading = false }: R
                   Generate a route intelligence brief
                 </h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Select your lane and cargo profile. FreightPulse will combine rates, port conditions, and carrier signals into one concise brief.
+                  Select your lane and cargo profile. FreightPulse will combine
+                  rates, port conditions, and carrier signals into one concise
+                  brief.
                 </p>
               </div>
             </div>
 
-            {/* Dropdowns side-by-side */}
+            {/* Dropdowns side-by-side: Origin / Destination */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Origin Port Select */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">
                   Origin port
                 </label>
-                <Select value={origin} onValueChange={(val) => setOrigin(val ?? "")} disabled={isLoading}>
+                <Select
+                  value={origin}
+                  onValueChange={(val) => setOrigin(val ?? "")}
+                  disabled={isLoading}
+                >
                   <SelectTrigger className="w-full h-11 px-3 bg-background border border-input rounded-lg flex items-center justify-between text-muted-foreground focus:ring-2 focus:ring-ring">
                     <span className="flex items-center gap-2 text-foreground">
                       <MapPin className="h-4 w-4 text-muted-foreground" />
@@ -98,7 +116,11 @@ export default function RouteBriefForm({ ports, onSubmit, isLoading = false }: R
                 <label className="text-sm font-medium text-foreground">
                   Destination port
                 </label>
-                <Select value={destination} onValueChange={(val) => setDestination(val ?? "")} disabled={isLoading}>
+                <Select
+                  value={destination}
+                  onValueChange={(val) => setDestination(val ?? "")}
+                  disabled={isLoading}
+                >
                   <SelectTrigger className="w-full h-11 px-3 bg-background border border-input rounded-lg flex items-center justify-between text-muted-foreground focus:ring-2 focus:ring-ring">
                     <span className="flex items-center gap-2 text-foreground">
                       <MapPin className="h-4 w-4 text-muted-foreground" />
@@ -114,6 +136,32 @@ export default function RouteBriefForm({ ports, onSubmit, isLoading = false }: R
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            {/* Carrier Select */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
+                Carrier
+              </label>
+              <Select
+                value={carrier}
+                onValueChange={(val) => setCarrier(val ?? "")}
+                disabled={isLoading}
+              >
+                <SelectTrigger className="w-full h-11 px-3 bg-background border border-input rounded-lg flex items-center justify-between text-muted-foreground focus:ring-2 focus:ring-ring">
+                  <span className="flex items-center gap-2 text-foreground">
+                    <Ship className="h-4 w-4 text-muted-foreground" />
+                    <SelectValue placeholder="Select carrier" />
+                  </span>
+                </SelectTrigger>
+                <SelectContent className="bg-popover border border-border rounded-lg shadow-md max-h-60 overflow-y-auto">
+                  {carriers.map((c) => (
+                    <SelectItem key={c.code || c.name} value={c.name}>
+                      {c.full_name || c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Container Profiles selection */}
@@ -133,8 +181,12 @@ export default function RouteBriefForm({ ports, onSubmit, isLoading = false }: R
                       : "border-border hover:border-muted-foreground/30 bg-background"
                   }`}
                 >
-                  <span className="font-semibold text-foreground">20ft container</span>
-                  <span className="text-xs text-muted-foreground mt-1">Compact dry cargo profile</span>
+                  <span className="font-semibold text-foreground">
+                    20ft container
+                  </span>
+                  <span className="text-xs text-muted-foreground mt-1">
+                    Compact dry cargo profile
+                  </span>
                 </button>
 
                 {/* 40ft Card */}
@@ -148,8 +200,12 @@ export default function RouteBriefForm({ ports, onSubmit, isLoading = false }: R
                       : "border-border hover:border-muted-foreground/30 bg-background"
                   }`}
                 >
-                  <span className="font-semibold text-foreground">40ft container</span>
-                  <span className="text-xs text-muted-foreground mt-1">Standard high-cube profile</span>
+                  <span className="font-semibold text-foreground">
+                    40ft container
+                  </span>
+                  <span className="text-xs text-muted-foreground mt-1">
+                    Standard high-cube profile
+                  </span>
                 </button>
               </div>
             </div>
@@ -168,9 +224,25 @@ export default function RouteBriefForm({ ports, onSubmit, isLoading = false }: R
             >
               {isLoading ? (
                 <>
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                   Submitting...
                 </>
@@ -193,7 +265,7 @@ export default function RouteBriefForm({ ports, onSubmit, isLoading = false }: R
         <div className="space-y-6">
           <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 uppercase tracking-wider">
             <Clock className="h-3 w-3" />
-            What you'll get
+            What you will get
           </span>
 
           <h3 className="text-2xl font-bold tracking-tight leading-snug">
@@ -233,7 +305,9 @@ export default function RouteBriefForm({ ports, onSubmit, isLoading = false }: R
                 <Lightbulb className="h-5 w-5 text-blue-400" />
               </div>
               <div className="space-y-1">
-                <h4 className="font-semibold text-sm">Actionable recommendation</h4>
+                <h4 className="font-semibold text-sm">
+                  Actionable recommendation
+                </h4>
                 <p className="text-xs text-slate-400 leading-relaxed">
                   A practical route recommendation for your cargo.
                 </p>
@@ -244,7 +318,8 @@ export default function RouteBriefForm({ ports, onSubmit, isLoading = false }: R
 
         {/* Footer info box */}
         <div className="mt-8 p-4 rounded-xl bg-white/5 border border-white/10 text-xs text-slate-400 leading-relaxed">
-          Briefs use your selected lane, current network conditions, and the latest carrier advisories.
+          Briefs use your selected lane, current network conditions, and the
+          latest carrier advisories.
         </div>
       </Card>
     </div>

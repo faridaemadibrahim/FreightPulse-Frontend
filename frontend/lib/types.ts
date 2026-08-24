@@ -77,6 +77,12 @@ export type AdvisorySeverity =
   | "elevated"
   | "advisory"
   | "normal";
+export interface CarrierInfo {
+  name: string;
+  code: string;
+  full_name: string;
+  advisories_count: number;
+}
 
 export interface CarrierAdvisory {
   id: string;
@@ -168,4 +174,32 @@ export interface RouteBriefResultData {
   confidence: number; // 0-100
 
   brief_markdown: string; // النص الكامل لو حبينا نستخدمه كـ fallback
+}
+export interface RouteBriefRequest {
+  origin: string;
+  destination: string;
+  carrier: string;
+  cargo_type: "20ft" | "40ft";
+}
+
+export interface RouteBriefResponse {
+  id: string;
+  user_id: string;
+  origin: string;
+  destination: string;
+  carrier: string;
+  cargo_type: string;
+  brief_markdown: string;
+  recommendation: string;
+  risk_level: string;
+  pdf_path: string;
+  status: string;
+  error_message: string;
+  created_at: string;
+}
+
+export interface RouteBriefStatusResponse {
+  id: string;
+  status: string;
+  error_message: string;
 }

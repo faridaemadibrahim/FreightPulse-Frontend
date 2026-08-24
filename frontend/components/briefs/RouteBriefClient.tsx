@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Port } from "@/lib/types";
+import { Port, CarrierInfo } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import RouteBriefForm from "./RouteBriefForm";
@@ -13,20 +13,24 @@ import {
   requestRouteBrief,
   getRouteBriefStatus,
   RouteBriefRequest,
-  RouteBriefDetailResponse,
+  RouteBriefResponse,
 } from "@/lib/api/route-brief";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
 
 interface RouteBriefClientProps {
   ports: Port[];
+  carriers: CarrierInfo[];
 }
 
 type StepState = "form" | "generating" | "result" | "error";
 
-export default function RouteBriefClient({ ports }: RouteBriefClientProps) {
+export default function RouteBriefClient({
+  ports,
+  carriers,
+}: RouteBriefClientProps) {
   const [step, setStep] = useState<StepState>("form");
   const [errorMessage, setErrorMessage] = useState("");
-  const [result, setResult] = useState<RouteBriefDetailResponse | null>(null);
+  const [result, setResult] = useState<RouteBriefResponse | null>(null);
 
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -53,12 +57,23 @@ export default function RouteBriefClient({ ports }: RouteBriefClientProps) {
 
     try {
       const response = await requestRouteBrief(request);
-      startPolling(response.brief_id);
-    } catch (error: any) {
+
+      // The backend may return the completed brief directly in the POST
+      // response (no polling needed), or just a "pending" record that
+      // requires polling /status. Handle both cases.
+      if (response.status === "completed") {
+        setResult(response);
+        setStep("result");
+      } else {
+        startPolling(response.id);
+      }
+    } catch (error: unknown) {
       setStep("error");
-      setErrorMessage(
-        error.message || "Failed to initialize Route Brief request.",
-      );
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to initialize Route Brief request.";
+      setErrorMessage(message);
     }
   };
 
@@ -95,18 +110,21 @@ export default function RouteBriefClient({ ports }: RouteBriefClientProps) {
         if (data.status === "completed") {
           if (pollingIntervalRef.current)
             clearInterval(pollingIntervalRef.current);
-          setResult(data as RouteBriefDetailResponse);
+          // NOTE: /status only returns {id, status, error_message} — it
+          // does NOT include brief_markdown/recommendation/risk_level.
+          // Until the backend confirms how to fetch the full brief once
+          // it's done, we fall back to the mock content for the result
+          // screen. See RouteBriefResult below.
           setStep("result");
         } else if (data.status === "failed") {
           if (pollingIntervalRef.current)
             clearInterval(pollingIntervalRef.current);
           setStep("error");
           setErrorMessage(
-            "AI intelligence engine failed to produce the route brief.",
+            data.error_message ||
+              "AI intelligence engine failed to produce the route brief.",
           );
         }
-        // TODO: once backend confirms the real status values, add the
-        // matching branch(es) here (e.g. "pending" / "processing").
       } catch (error: any) {
         // Log error but keep polling in case it's a temporary connection issue
         console.warn("Polling status error:", error);
@@ -134,7 +152,11 @@ export default function RouteBriefClient({ ports }: RouteBriefClientProps) {
     <div className="w-full">
       {/* 1. Form Step */}
       {step === "form" && (
-        <RouteBriefForm ports={ports} onSubmit={handleFormSubmit} />
+        <RouteBriefForm
+          ports={ports}
+          carriers={carriers}
+          onSubmit={handleFormSubmit}
+        />
       )}
 
       {/* 2. Generating / Loader Step */}
@@ -172,9 +194,13 @@ export default function RouteBriefClient({ ports }: RouteBriefClientProps) {
 
       {/* 4. Display Results Step */}
       {/* NOTE: currently always shows mock data regardless of `result`,
-          since /route-brief isn't live on the backend yet.
-          Once it is, swap `routeBriefMock` for `result` here
-          (after unifying RouteBriefDetailResponse / RouteBriefResultData). */}
+          since we don't yet have a confirmed way to fetch the full brief
+          content (brief_markdown, recommendation, risk_level) once
+          /status reports "completed" — the real /status endpoint doesn't
+          include them, and there's no confirmed GET /route-briefs/{id}.
+          Once confirmed, swap `routeBriefMock` for the real `result`
+          here (after mapping RouteBriefResponse -> RouteBriefResultData,
+          since their shapes differ). */}
       {step === "result" && (
         <RouteBriefResult
           data={routeBriefMock as RouteBriefResultData}

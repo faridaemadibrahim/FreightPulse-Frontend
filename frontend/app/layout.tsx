@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import AppHeader from "@/components/layout/AppHeader";
+import { AlertsProvider } from "@/components/providers/AlertsProvider";
 import "./globals.css";
 
 const fontSans = Inter({
@@ -42,12 +43,14 @@ export default function RootLayout({
       <body>
         <TooltipProvider>
           <SidebarProvider>
-            <AppSidebar />
-            <SidebarInset>
-              <AppHeader />
+            <AlertsProvider>
+              <AppSidebar />
+              <SidebarInset>
+                <AppHeader />
 
-              <main className="flex-1 p-6">{children}</main>
-            </SidebarInset>{" "}
+                <main className="flex-1 p-6">{children}</main>
+              </SidebarInset>{" "}
+            </AlertsProvider>
           </SidebarProvider>
         </TooltipProvider>
         <Toaster position="bottom-right" />
@@ -55,3 +58,4 @@ export default function RootLayout({
     </html>
   );
 }
+
