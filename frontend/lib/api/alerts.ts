@@ -61,3 +61,23 @@ export async function getAlerts(): Promise<Alert[]> {
     return [];
   }
 }
+export async function markAlertAsRead(alertId: string): Promise<void> {
+  if (isMockMode()) {
+    return;
+  }
+
+  try {
+    await apiClient.patch(`/alerts/${alertId}/read`);
+  } catch (error: unknown) {
+    const err = error as {
+      response?: { status: number; statusText: string };
+      message?: string;
+    };
+    console.error(
+      `[FreightPulse Error] Failed to mark alert ${alertId} as read:`,
+      err?.response
+        ? `${err.response.status} ${err.response.statusText}`
+        : err?.message,
+    );
+  }
+}

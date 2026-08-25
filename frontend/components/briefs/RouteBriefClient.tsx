@@ -7,8 +7,6 @@ import { Button } from "@/components/ui/button";
 import RouteBriefForm from "./RouteBriefForm";
 import RouteBriefStatus from "./RouteBriefStatus";
 import RouteBriefResult from "./RouteBriefResult";
-import routeBriefMock from "@/mocks/route-brief-result.json";
-import { RouteBriefResultData } from "@/lib/types";
 import {
   requestRouteBrief,
   getRouteBriefStatus,
@@ -59,8 +57,8 @@ export default function RouteBriefClient({
       const response = await requestRouteBrief(request);
 
       // The backend may return the completed brief directly in the POST
-      // response (no polling needed), or just a "pending" record that
-      // requires polling /status. Handle both cases.
+      // response (no polling needed), or a "pending" record that requires
+      // polling /status until brief_markdown etc. are filled in.
       if (response.status === "completed") {
         setResult(response);
         setStep("result");
@@ -110,11 +108,9 @@ export default function RouteBriefClient({
         if (data.status === "completed") {
           if (pollingIntervalRef.current)
             clearInterval(pollingIntervalRef.current);
-          // NOTE: /status only returns {id, status, error_message} — it
-          // does NOT include brief_markdown/recommendation/risk_level.
-          // Until the backend confirms how to fetch the full brief once
-          // it's done, we fall back to the mock content for the result
-          // screen. See RouteBriefResult below.
+          // /status now returns the full record (brief_markdown,
+          // recommendation, risk_level included), so we can use it directly.
+          setResult(data);
           setStep("result");
         } else if (data.status === "failed") {
           if (pollingIntervalRef.current)
@@ -125,7 +121,8 @@ export default function RouteBriefClient({
               "AI intelligence engine failed to produce the route brief.",
           );
         }
-      } catch (error: any) {
+        // else: still "pending" / "processing" — keep polling
+      } catch (error: unknown) {
         // Log error but keep polling in case it's a temporary connection issue
         console.warn("Polling status error:", error);
       }
@@ -193,19 +190,8 @@ export default function RouteBriefClient({
       )}
 
       {/* 4. Display Results Step */}
-      {/* NOTE: currently always shows mock data regardless of `result`,
-          since we don't yet have a confirmed way to fetch the full brief
-          content (brief_markdown, recommendation, risk_level) once
-          /status reports "completed" — the real /status endpoint doesn't
-          include them, and there's no confirmed GET /route-briefs/{id}.
-          Once confirmed, swap `routeBriefMock` for the real `result`
-          here (after mapping RouteBriefResponse -> RouteBriefResultData,
-          since their shapes differ). */}
-      {step === "result" && (
-        <RouteBriefResult
-          data={routeBriefMock as RouteBriefResultData}
-          onNewBrief={resetForm}
-        />
+      {step === "result" && result && (
+        <RouteBriefResult data={result} onNewBrief={resetForm} />
       )}
     </div>
   );

@@ -27,8 +27,13 @@ export interface RouteBriefResponse {
 // Lightweight record returned by GET /route-briefs/{id}/status
 export interface RouteBriefStatusResponse {
   id: string;
+  brief_id: string;
   status: string;
-  error_message: string;
+  brief_markdown: string | null;
+  recommendation: string | null;
+  risk_level: string | null;
+  error_message: string | null;
+  created_at: string;
 }
 
 // In-memory simulation state for Mock Mode
@@ -74,7 +79,7 @@ export async function requestRouteBrief(
 
 export async function getRouteBriefStatus(
   briefId: string,
-): Promise<RouteBriefStatusResponse> {
+): Promise<RouteBriefResponse> {
   if (isMockMode() && simulatedBriefs[briefId]) {
     const brief = simulatedBriefs[briefId];
     brief.ticks += 1;
@@ -82,15 +87,63 @@ export async function getRouteBriefStatus(
     if (brief.ticks < brief.maxTicks) {
       return {
         id: briefId,
+        user_id: "mock_user",
+        origin: brief.request.origin,
+        destination: brief.request.destination,
+        carrier: brief.request.carrier,
+        cargo_type: brief.request.cargo_type,
         status: brief.ticks === 1 ? "pending" : "processing",
+        brief_markdown: "",
+        recommendation: "",
+        risk_level: "",
+        pdf_path: "",
         error_message: "",
+        created_at: new Date().toISOString(),
       };
     }
 
+    // Finished — return the full mock brief content
+    const rec = brief.request.destination === "NLRTM" ? "reroute" : "ship_now";
+    const risk = brief.request.destination === "NLRTM" ? "high" : "low";
+
     return {
       id: briefId,
+      user_id: "mock_user",
+      origin: brief.request.origin,
+      destination: brief.request.destination,
+      carrier: brief.request.carrier,
+      cargo_type: brief.request.cargo_type,
       status: "completed",
+      recommendation: rec,
+      risk_level: risk,
+      pdf_path: "",
       error_message: "",
+      created_at: new Date().toISOString(),
+      brief_markdown: `# AI Route Brief: ${brief.request.origin} → ${brief.request.destination}
+
+This route analysis combines real-time freight signals, carrier schedules, and port conditions to assist your shipping timeline decision.
+
+## 📈 Rate Outlook
+- **Current Spot Rate**: $3,420 / ${brief.request.cargo_type}
+- **7-Day Trend**: Stable (±1.5%)
+- **Carrier (${brief.request.carrier}) Surcharges**: Peak Season Surcharges (PSS) are scheduled to take effect starting next week.
+
+## 🛑 Port Conditions & Congestion
+- **Origin Port (${brief.request.origin})**: Average dwell time is currently **2.1 days** with low vessel queuing.
+- **Destination Port (${brief.request.destination})**: Vessels are experiencing an average wait time of **1.8 days**. Dwell times remain stable.
+
+## ⚠️ Risk Assessment
+- **Transit Delay Risk**: **${risk.toUpperCase()}**
+- **Carrier Capacity**: High space utilization is noted on this trade lane. Booking 14 days in advance is highly recommended.
+
+## 💡 Practical Recommendation
+Based on current data models, we recommend that you **${rec.replace("_", " ").toUpperCase()}**.
+${
+  rec === "reroute"
+    ? "Due to elevated transit delays on this direct lane, routing via alternative hubs is recommended to secure timely delivery."
+    : "Spot rates are expected to rise next month; booking now secures the lowest current benchmark."
+}
+`,
     };
   }
 

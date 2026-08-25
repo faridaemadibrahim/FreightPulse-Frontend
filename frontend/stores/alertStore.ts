@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import { Alert } from "@/lib/types";
-import { getAlerts } from "@/lib/api/alerts";
+import { getAlerts, markAlertAsRead } from "@/lib/api/alerts";
 
 interface AlertStore {
   alerts: Alert[];
@@ -14,7 +14,7 @@ interface AlertStore {
   fetchAlerts: () => Promise<void>;
 }
 
-export const useAlertStore = create<AlertStore>((set) => ({
+export const useAlertStore = create<AlertStore>((set, get) => ({
   alerts: [],
   isLoading: false,
   setAlerts: (alerts) => set({ alerts }),
@@ -26,16 +26,31 @@ export const useAlertStore = create<AlertStore>((set) => ({
       }
       return { alerts: [alert, ...state.alerts] };
     }),
-  markAsRead: (id) =>
+  markAsRead: (id) => {
+    // Optimistic update: reflect the change on screen immediately...
     set((state) => ({
       alerts: state.alerts.map((a) =>
         a.id === id ? { ...a, is_read: true } : a,
       ),
-    })),
-  markAllAsRead: () =>
+    }));
+    // ...then persist it to the backend so a page refresh doesn't revert it.
+    markAlertAsRead(id);
+  },
+  markAllAsRead: () => {
+    const unreadIds = get()
+      .alerts.filter((a) => !a.is_read)
+      .map((a) => a.id);
+
     set((state) => ({
       alerts: state.alerts.map((a) => ({ ...a, is_read: true })),
-    })),
+    }));
+
+    // Persist each one to the backend. There's no bulk "mark all read"
+    // endpoint, so we fire a request per previously-unread alert.
+    unreadIds.forEach((id) => {
+      markAlertAsRead(id);
+    });
+  },
   fetchAlerts: async () => {
     set({ isLoading: true });
     try {
