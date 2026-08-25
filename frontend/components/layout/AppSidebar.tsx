@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import {
   LayoutDashboard,
   TrendingUp,
@@ -12,9 +13,9 @@ import {
 
 import {
   Sidebar,
+  SidebarHeader,
   SidebarContent,
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarGroupContent,
   SidebarMenu,
   SidebarMenuItem,
@@ -36,10 +37,25 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
+      <SidebarHeader className="h-auto justify-center px-4 py-4 group-data-[collapsible=icon]:hidden">
+        <Link
+          href="/"
+          aria-label="FreightPulse dashboard"
+          className="flex w-fit items-center gap-1.5 text-[18px] font-bold tracking-tight text-[#111827]"
+        >
+          <Image
+            src="/images/freightpulse-mark.svg"
+            alt=""
+            width={42}
+            height={30}
+            priority
+            className="h-[18px] w-[56px] object-contain"
+          />
+          FreightPulse
+        </Link>
+      </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>FreightPulse</SidebarGroupLabel>
-
+        <SidebarGroup className="px-2 py-0">
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (

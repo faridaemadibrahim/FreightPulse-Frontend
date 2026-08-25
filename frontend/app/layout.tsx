@@ -28,6 +28,10 @@ export const metadata: Metadata = {
   title: "FreightPulse — Freight & Logistics Intelligence",
   description:
     "AI-powered freight rate, port congestion, and carrier advisory dashboard for MENA.",
+  icons: {
+    icon: "/images/freightpulse-mark.svg",
+    shortcut: "/images/freightpulse-mark.svg",
+  },
 };
 
 export default function RootLayout({
@@ -58,4 +62,3 @@ export default function RootLayout({
     </html>
   );
 }
-
