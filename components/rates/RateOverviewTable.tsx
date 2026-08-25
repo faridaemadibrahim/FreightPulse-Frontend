@@ -14,10 +14,15 @@ import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 interface RateOverviewTableProps {
   lanes: LaneSummary[];
   selectedLaneName?: string;
+  selectedContainerType?: string;
   onSelectLane?: (lane: LaneSummary) => void;
 }
 
-function SoftTrendPill({ trend }: { trend: "rising" | "falling" | "stable" | string }) {
+function SoftTrendPill({
+  trend,
+}: {
+  trend: "rising" | "falling" | "stable" | string;
+}) {
   if (trend === "rising" || trend === "up") {
     return (
       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-red-100/90 text-red-700 dark:bg-red-950/60 dark:text-red-300">
@@ -47,6 +52,7 @@ function SoftTrendPill({ trend }: { trend: "rising" | "falling" | "stable" | str
 export default function RateOverviewTable({
   lanes,
   selectedLaneName,
+  selectedContainerType,
   onSelectLane,
 }: RateOverviewTableProps) {
   if (!lanes || lanes.length === 0) {
@@ -98,16 +104,19 @@ export default function RateOverviewTable({
               const isSelected =
                 selectedLaneName &&
                 (selectedLaneName === lane.trade_lane ||
-                  selectedLaneName.replace("-", " → ") === formattedLane);
+                  selectedLaneName.replace("-", " → ") === formattedLane) &&
+                (!selectedContainerType ||
+                  selectedContainerType === lane.container_type);
 
               return (
                 <TableRow
                   key={`${lane.trade_lane}-${lane.container_type}`}
                   onClick={() => onSelectLane && onSelectLane(lane)}
-                  className={`cursor-pointer transition-colors border-b border-slate-100 dark:border-slate-800 ${isSelected
-                    ? "bg-blue-50/70 dark:bg-blue-950/40"
-                    : "hover:bg-slate-50/80 dark:hover:bg-slate-800/40"
-                    }`}
+                  className={`cursor-pointer transition-colors border-b border-slate-100 dark:border-slate-800 ${
+                    isSelected
+                      ? "bg-blue-50/70 dark:bg-blue-950/40"
+                      : "hover:bg-slate-50/80 dark:hover:bg-slate-800/40"
+                  }`}
                 >
                   <TableCell className="font-medium py-4">
                     <Link
@@ -131,12 +140,13 @@ export default function RateOverviewTable({
                     ${lane.current_rate_usd.toLocaleString()}
                   </TableCell>
                   <TableCell
-                    className={`text-right font-bold font-mono text-sm py-4 ${isPositiveChange
-                      ? "text-red-600 dark:text-red-400"
-                      : isNegativeChange
-                        ? "text-emerald-600 dark:text-emerald-400"
-                        : "text-slate-500"
-                      }`}
+                    className={`text-right font-bold font-mono text-sm py-4 ${
+                      isPositiveChange
+                        ? "text-red-600 dark:text-red-400"
+                        : isNegativeChange
+                          ? "text-emerald-600 dark:text-emerald-400"
+                          : "text-slate-500"
+                    }`}
                   >
                     {isPositiveChange ? "+" : ""}
                     {lane.change_7d_pct}%
