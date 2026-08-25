@@ -25,7 +25,7 @@ export default function CarrierAdvisoryFeed({ advisories }: Props) {
   };
   const getSeverityStyle = (severity: string | null | undefined) => {
     if (!severity) {
-      return "bg-slate-100 text-slate-700 border-slate-200"; // fallback محايد
+      return "bg-slate-100 text-slate-700 border-slate-200";
     }
     const s = severity.toLowerCase();
     if (s === "elevated") {
