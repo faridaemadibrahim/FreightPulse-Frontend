@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import { LaneSummary } from "@/lib/types";
 import {
@@ -106,8 +105,8 @@ export default function RateOverviewTable({
                   key={`${lane.trade_lane}-${lane.container_type}`}
                   onClick={() => onSelectLane && onSelectLane(lane)}
                   className={`cursor-pointer transition-colors border-b border-slate-100 dark:border-slate-800 ${isSelected
-                      ? "bg-blue-50/70 dark:bg-blue-950/40"
-                      : "hover:bg-slate-50/80 dark:hover:bg-slate-800/40"
+                    ? "bg-blue-50/70 dark:bg-blue-950/40"
+                    : "hover:bg-slate-50/80 dark:hover:bg-slate-800/40"
                     }`}
                 >
                   <TableCell className="font-medium py-4">
@@ -133,10 +132,10 @@ export default function RateOverviewTable({
                   </TableCell>
                   <TableCell
                     className={`text-right font-bold font-mono text-sm py-4 ${isPositiveChange
-                        ? "text-red-600 dark:text-red-400"
-                        : isNegativeChange
-                          ? "text-emerald-600 dark:text-emerald-400"
-                          : "text-slate-500"
+                      ? "text-red-600 dark:text-red-400"
+                      : isNegativeChange
+                        ? "text-emerald-600 dark:text-emerald-400"
+                        : "text-slate-500"
                       }`}
                   >
                     {isPositiveChange ? "+" : ""}

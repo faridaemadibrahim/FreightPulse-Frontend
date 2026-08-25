@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { MousePointerClick } from "lucide-react";
 import { LaneSummary, RateCompareData } from "@/lib/types";
 import RateOverviewTable from "./RateOverviewTable";
 import RateCompareCard from "./RateCompareCard";
@@ -34,12 +35,6 @@ export default function RatesClient({ initialLanes }: RatesClientProps) {
   const [selectedLane, setSelectedLane] = useState<LaneSummary | null>(() => {
     return initialLanes[0] || null;
   });
-
-  useEffect(() => {
-    if (!selectedLane && initialLanes.length > 0) {
-      setSelectedLane(initialLanes[0]);
-    }
-  }, [initialLanes, selectedLane]);
 
   const [compareData, setCompareData] = useState<RateCompareData | null>(null);
   const [historyData, setHistoryData] = useState<any[]>([]);
@@ -84,12 +79,18 @@ export default function RatesClient({ initialLanes }: RatesClientProps) {
         onContainerTypeChange={setContainerType}
       />
 
+      <p className="text-sm text-slate-500 flex items-center gap-1.5">
+        <MousePointerClick className="h-4 w-4" />
+        Click any lane below to view its trend chart and benchmark comparison
+      </p>
+
       {/* Side-by-Side Grid: All Trade Lanes Table (Left 2 cols) & Benchmark Comparison (Right 1 col) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
         <div className="lg:col-span-2">
           <RateOverviewTable
             lanes={filteredLanes}
             selectedLaneName={selectedLane?.trade_lane}
+            selectedContainerType={selectedLane?.container_type}
             onSelectLane={(lane) => setSelectedLane(lane)}
           />
         </div>

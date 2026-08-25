@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Bell,
   TrendingUp,
@@ -9,9 +9,8 @@ import {
   Ship,
 } from "lucide-react";
 import { Alert, AlertType } from "@/lib/types";
-import { getAlerts } from "@/lib/api/alerts";
+import { useAlertStore } from "@/stores/alertStore";
 
-// أيقونة مختلفة حسب نوع التنبيه
 function getAlertIcon(type: AlertType) {
   switch (type) {
     case "rate_spike":
@@ -47,22 +46,31 @@ function formatRelativeTime(dateStr: string) {
 
 export default function AlertsBellDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    getAlerts()
-      .then((data: Alert[]) => setAlerts(data))
-      .catch((err: unknown) => console.error("Failed to load alerts:", err))
-      .finally(() => setIsLoading(false));
-  }, []);
+  const alerts = useAlertStore((s) => s.alerts);
+  const isLoading = useAlertStore((s) => s.isLoading);
+  const markAllAsRead = useAlertStore((s) => s.markAllAsRead);
 
   const unreadCount = alerts.filter((a) => !a.is_read).length;
+
+  // Mark alerts as read only when the dropdown is CLOSED after having been
+  // open — i.e. the user actually saw them and moved on. Marking on open
+  // would immediately hide the "unread" badge for alerts the user hasn't
+  // really looked at yet, and would also mark any alert that arrives via
+  // WebSocket WHILE the dropdown happens to be open, before the user had
+  // a chance to notice it.
+  const handleToggle = () => {
+    const wasOpen = isOpen;
+    setIsOpen((prev) => !prev);
+
+    if (wasOpen) {
+      markAllAsRead();
+    }
+  };
 
   return (
     <div className="relative">
       <button
-        onClick={() => setIsOpen((prev) => !prev)}
+        onClick={handleToggle}
         className="relative rounded-lg p-2 hover:bg-muted"
       >
         <Bell className="h-5 w-5" />

@@ -1,32 +1,34 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Port } from "@/lib/types";
+import { Port, CarrierInfo } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import RouteBriefForm from "./RouteBriefForm";
 import RouteBriefStatus from "./RouteBriefStatus";
 import RouteBriefResult from "./RouteBriefResult";
-import routeBriefMock from "@/mocks/route-brief-result.json";
-import { RouteBriefResultData } from "@/lib/types";
 import {
   requestRouteBrief,
   getRouteBriefStatus,
   RouteBriefRequest,
-  RouteBriefDetailResponse,
+  RouteBriefResponse,
 } from "@/lib/api/route-brief";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
 
 interface RouteBriefClientProps {
   ports: Port[];
+  carriers: CarrierInfo[];
 }
 
 type StepState = "form" | "generating" | "result" | "error";
 
-export default function RouteBriefClient({ ports }: RouteBriefClientProps) {
+export default function RouteBriefClient({
+  ports,
+  carriers,
+}: RouteBriefClientProps) {
   const [step, setStep] = useState<StepState>("form");
   const [errorMessage, setErrorMessage] = useState("");
-  const [result, setResult] = useState<RouteBriefDetailResponse | null>(null);
+  const [result, setResult] = useState<RouteBriefResponse | null>(null);
 
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -53,12 +55,23 @@ export default function RouteBriefClient({ ports }: RouteBriefClientProps) {
 
     try {
       const response = await requestRouteBrief(request);
-      startPolling(response.brief_id);
-    } catch (error: any) {
+
+      // The backend may return the completed brief directly in the POST
+      // response (no polling needed), or a "pending" record that requires
+      // polling /status until brief_markdown etc. are filled in.
+      if (response.status === "completed") {
+        setResult(response);
+        setStep("result");
+      } else {
+        startPolling(response.id);
+      }
+    } catch (error: unknown) {
       setStep("error");
-      setErrorMessage(
-        error.message || "Failed to initialize Route Brief request.",
-      );
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to initialize Route Brief request.";
+      setErrorMessage(message);
     }
   };
 
@@ -95,19 +108,21 @@ export default function RouteBriefClient({ ports }: RouteBriefClientProps) {
         if (data.status === "completed") {
           if (pollingIntervalRef.current)
             clearInterval(pollingIntervalRef.current);
-          setResult(data as RouteBriefDetailResponse);
+          // /status now returns the full record (brief_markdown,
+          // recommendation, risk_level included), so we can use it directly.
+          setResult(data);
           setStep("result");
         } else if (data.status === "failed") {
           if (pollingIntervalRef.current)
             clearInterval(pollingIntervalRef.current);
           setStep("error");
           setErrorMessage(
-            "AI intelligence engine failed to produce the route brief.",
+            data.error_message ||
+              "AI intelligence engine failed to produce the route brief.",
           );
         }
-        // TODO: once backend confirms the real status values, add the
-        // matching branch(es) here (e.g. "pending" / "processing").
-      } catch (error: any) {
+        // else: still "pending" / "processing" — keep polling
+      } catch (error: unknown) {
         // Log error but keep polling in case it's a temporary connection issue
         console.warn("Polling status error:", error);
       }
@@ -134,7 +149,11 @@ export default function RouteBriefClient({ ports }: RouteBriefClientProps) {
     <div className="w-full">
       {/* 1. Form Step */}
       {step === "form" && (
-        <RouteBriefForm ports={ports} onSubmit={handleFormSubmit} />
+        <RouteBriefForm
+          ports={ports}
+          carriers={carriers}
+          onSubmit={handleFormSubmit}
+        />
       )}
 
       {/* 2. Generating / Loader Step */}
@@ -171,15 +190,8 @@ export default function RouteBriefClient({ ports }: RouteBriefClientProps) {
       )}
 
       {/* 4. Display Results Step */}
-      {/* NOTE: currently always shows mock data regardless of `result`,
-          since /route-brief isn't live on the backend yet.
-          Once it is, swap `routeBriefMock` for `result` here
-          (after unifying RouteBriefDetailResponse / RouteBriefResultData). */}
-      {step === "result" && (
-        <RouteBriefResult
-          data={routeBriefMock as RouteBriefResultData}
-          onNewBrief={resetForm}
-        />
+      {step === "result" && result && (
+        <RouteBriefResult data={result} onNewBrief={resetForm} />
       )}
     </div>
   );

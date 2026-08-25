@@ -26,6 +26,14 @@
       "change_7d_pct": -3.5
     }
   ],
+  "rate_trend_30d": [
+    { "date": "2026-07-24", "avg_rate_usd": 2450 },
+    { "date": "2026-07-25", "avg_rate_usd": 2470 },
+    { "date": "2026-07-26", "avg_rate_usd": 2510 },
+    { "date": "2026-07-27", "avg_rate_usd": 2490 },
+    { "date": "2026-07-28", "avg_rate_usd": 2530 },
+    { "date": "2026-08-22", "avg_rate_usd": 2650 }
+  ],
   "port_congestion_overview": [
     {
       "port_code": "SGSIN",

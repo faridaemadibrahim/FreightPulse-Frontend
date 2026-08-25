@@ -25,6 +25,7 @@ export async function getDashboard(): Promise<DashboardData> {
     return {
       tracked_lanes_count: 0,
       lanes_summary: [],
+      rate_trend_30d: [],
       port_congestion_overview: [],
       recent_advisories: [],
       unread_alert_count: 0,
