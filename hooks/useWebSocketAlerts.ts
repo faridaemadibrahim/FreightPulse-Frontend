@@ -8,11 +8,11 @@ import { Alert } from "@/lib/types";
 const WS_URL =
   process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000/api/v1/ws/alerts";
 
-const MAX_RECONNECT_DELAY = 30000; // 30 ثانية كحد أقصى
+const MAX_RECONNECT_DELAY = 30000;
 
 export function useWebSocketAlerts(userId: string) {
   const wsRef = useRef<WebSocket | null>(null);
-  const reconnectDelay = useRef(1000); // نبدأ بثانية واحدة
+  const reconnectDelay = useRef(1000);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const addAlert = useAlertStore((s) => s.addAlert);
 
@@ -59,12 +59,15 @@ export function useWebSocketAlerts(userId: string) {
           };
 
           const alert: Alert = {
-            id: rawData.id || `ws-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            id:
+              rawData.id ||
+              `ws-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             type: rawData.alert_type || "rate_spike",
             severity: rawData.severity || "info",
             is_new: true,
             is_read: false,
-            title: TITLE_MAP[rawData.alert_type] || rawData.alert_type || "Alert",
+            title:
+              TITLE_MAP[rawData.alert_type] || rawData.alert_type || "Alert",
             message: rawData.message || "",
             location_label: rawData.trade_lane || "",
             magnitude_pct: rawData.magnitude_pct,
@@ -80,11 +83,16 @@ export function useWebSocketAlerts(userId: string) {
 
       ws.onclose = (event) => {
         if (isUnmounted) return;
-        console.log(`[WebSocket] Connection closed (code: ${event.code}). Reconnecting...`);
+        console.log(
+          `[WebSocket] Connection closed (code: ${event.code}). Reconnecting...`,
+        );
         wsRef.current = null;
 
         reconnectTimeoutRef.current = setTimeout(() => {
-          reconnectDelay.current = Math.min(reconnectDelay.current * 2, MAX_RECONNECT_DELAY);
+          reconnectDelay.current = Math.min(
+            reconnectDelay.current * 2,
+            MAX_RECONNECT_DELAY,
+          );
           connect();
         }, reconnectDelay.current);
       };
@@ -92,7 +100,6 @@ export function useWebSocketAlerts(userId: string) {
       ws.onerror = (err) => {
         if (isUnmounted) return;
         console.error("[WebSocket] Error occurred:", err);
-        // let onclose handle reconnection
       };
     }
 
@@ -109,4 +116,3 @@ export function useWebSocketAlerts(userId: string) {
     };
   }, [userId, addAlert]);
 }
-
