@@ -13,7 +13,6 @@ export default function CarrierAdvisoryFeed({ advisories }: Props) {
       new Date(b.published_at).getTime() - new Date(a.published_at).getTime(),
   );
 
-  // Helper for Carrier Logo Avatar Color
   const getCarrierBadgeColor = (carrier: string) => {
     const c = carrier.toLowerCase();
     if (c.includes("maersk")) return "bg-[#0066ff] text-white";
@@ -24,8 +23,6 @@ export default function CarrierAdvisoryFeed({ advisories }: Props) {
     if (c.includes("one")) return "bg-pink-600 text-white";
     return "bg-slate-800 text-white";
   };
-
-  // Helper for Severity / Status Badge styling
   const getSeverityStyle = (severity: string | null | undefined) => {
     if (!severity) {
       return "bg-slate-100 text-slate-700 border-slate-200"; // fallback محايد
