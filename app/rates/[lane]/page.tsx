@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, Calendar, Database, Container } from "lucide-react";
 import { getRateLane, getRateCompare } from "@/lib/api";
 import TrendBadge from "@/components/rates/TrendBadge";
-import RateTrendChart from "@/components/rates/RateTrendChart";
+import RateTrendChartLazy from "@/components/rates/RateTrendChartLazy";
 import RateCompareCard from "@/components/rates/RateCompareCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -52,12 +52,15 @@ export default async function RateDetailPage({ params }: Props) {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold tracking-tight">{decodedLane}</h1>
+              <h1 className="text-3xl font-bold tracking-tight">
+                {decodedLane}
+              </h1>
               <TrendBadge trend={detail.trend} />
             </div>
             <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground mt-2">
               <span className="inline-flex items-center gap-1">
-                <Container className="h-3.5 w-3.5" /> Container: {detail.container_type}
+                <Container className="h-3.5 w-3.5" /> Container:{" "}
+                {detail.container_type}
               </span>
               <span className="inline-flex items-center gap-1">
                 <Database className="h-3.5 w-3.5" /> Source: {detail.source}
@@ -73,14 +76,16 @@ export default async function RateDetailPage({ params }: Props) {
             <span className="text-2xl font-bold font-mono text-primary">
               ${detail.current_rate_usd.toLocaleString()}
             </span>
-            <span className="text-xs font-semibold text-muted-foreground">USD / FEU</span>
+            <span className="text-xs font-semibold text-muted-foreground">
+              USD / FEU
+            </span>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <RateTrendChart
+          <RateTrendChartLazy
             data={detail.history}
             lane={decodedLane}
             containerType={detail.container_type}
@@ -93,7 +98,9 @@ export default async function RateDetailPage({ params }: Props) {
 
       <Card className="w-full">
         <CardHeader>
-          <CardTitle className="text-lg font-bold">Historical Rate Series</CardTitle>
+          <CardTitle className="text-lg font-bold">
+            Historical Rate Series
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="rounded-md border overflow-hidden">
@@ -102,7 +109,9 @@ export default async function RateDetailPage({ params }: Props) {
                 <TableRow>
                   <TableHead>Date</TableHead>
                   <TableHead className="text-right">Spot Rate (USD)</TableHead>
-                  <TableHead className="text-right">Variance vs Current</TableHead>
+                  <TableHead className="text-right">
+                    Variance vs Current
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -111,10 +120,15 @@ export default async function RateDetailPage({ params }: Props) {
                   .reverse()
                   .map((point) => {
                     const diff = point.rate_usd - detail.current_rate_usd;
-                    const diffPct = ((diff / detail.current_rate_usd) * 100).toFixed(1);
+                    const diffPct = (
+                      (diff / detail.current_rate_usd) *
+                      100
+                    ).toFixed(1);
                     return (
                       <TableRow key={point.date}>
-                        <TableCell className="font-medium">{point.date}</TableCell>
+                        <TableCell className="font-medium">
+                          {point.date}
+                        </TableCell>
                         <TableCell className="text-right font-mono font-semibold">
                           ${point.rate_usd.toLocaleString()}
                         </TableCell>
@@ -123,11 +137,13 @@ export default async function RateDetailPage({ params }: Props) {
                             diff > 0
                               ? "text-red-600"
                               : diff < 0
-                              ? "text-green-600"
-                              : "text-muted-foreground"
+                                ? "text-green-600"
+                                : "text-muted-foreground"
                           }`}
                         >
-                          {diff === 0 ? "Current" : `${diff > 0 ? "+" : ""}${diffPct}%`}
+                          {diff === 0
+                            ? "Current"
+                            : `${diff > 0 ? "+" : ""}${diffPct}%`}
                         </TableCell>
                       </TableRow>
                     );

@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { Port } from "@/lib/types";
+import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 
 const PortCongestionMap = dynamic(() => import("./PortCongestionMap"), {
   ssr: false,
@@ -24,10 +25,14 @@ export default function PortsMapWrapper({
   onSelectPort,
 }: Props) {
   return (
-    <PortCongestionMap
-      ports={ports}
-      selectedPort={selectedPort}
-      onSelectPort={onSelectPort}
-    />
+    // Leaflet touches the DOM directly and can throw after render, which
+    // app/error.tsx never sees — keep a broken map from blanking the page.
+    <ErrorBoundary label="The port map failed to load">
+      <PortCongestionMap
+        ports={ports}
+        selectedPort={selectedPort}
+        onSelectPort={onSelectPort}
+      />
+    </ErrorBoundary>
   );
 }

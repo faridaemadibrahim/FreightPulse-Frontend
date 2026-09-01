@@ -1,9 +1,11 @@
 import { DashboardData } from "@/lib/types";
 import SummaryCards from "./SummaryCards";
-import PortCongestionChart from "./PortCongestionChart";
 import TrackedLanesList from "./TrackedLanesList";
 import RecentAlertsList from "./RecentAlertsList";
-import DashboardRateTrendChart from "./DashboardRateTrendChart";
+import {
+  DashboardRateTrendChartLazy,
+  PortCongestionChartLazy,
+} from "./DashboardChartsLazy";
 export default function DashboardClient({
   initialData,
 }: {
@@ -22,9 +24,9 @@ export default function DashboardClient({
       <SummaryCards initialData={initialData} />
       <div className="grid gap-4 lg:grid-cols-2">
         {/* هنحط هنا الـ Rate Trend chart لاحقًا */}
-        <DashboardRateTrendChart data={initialData.rate_trend_30d} />
+        <DashboardRateTrendChartLazy data={initialData.rate_trend_30d} />
 
-        <PortCongestionChart ports={initialData.port_congestion_overview} />
+        <PortCongestionChartLazy ports={initialData.port_congestion_overview} />
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
         <TrackedLanesList lanes={initialData.lanes_summary} />

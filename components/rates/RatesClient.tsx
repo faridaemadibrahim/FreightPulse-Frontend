@@ -2,10 +2,10 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { MousePointerClick } from "lucide-react";
-import { LaneSummary, RateCompareData } from "@/lib/types";
+import { LaneSummary, RateCompareData, RatePoint } from "@/lib/types";
 import RateOverviewTable from "./RateOverviewTable";
 import RateCompareCard from "./RateCompareCard";
-import RateTrendChart from "./RateTrendChart";
+import RateTrendChartLazy from "./RateTrendChartLazy";
 import RateFilters from "./RateFilters";
 import { getRateCompare, getRateLane } from "@/lib/api";
 
@@ -37,7 +37,7 @@ export default function RatesClient({ initialLanes }: RatesClientProps) {
   });
 
   const [compareData, setCompareData] = useState<RateCompareData | null>(null);
-  const [historyData, setHistoryData] = useState<any[]>([]);
+  const [historyData, setHistoryData] = useState<RatePoint[]>([]);
 
   // Fetch benchmark compare and time series data when selected lane changes
   useEffect(() => {
@@ -106,7 +106,7 @@ export default function RatesClient({ initialLanes }: RatesClientProps) {
 
       {/* Bottom Chart: Full Width 30-Day Rate Trend Chart */}
       <div className="w-full pt-2">
-        <RateTrendChart
+        <RateTrendChartLazy
           data={historyData.length > 0 ? historyData : undefined}
           lane={selectedLane?.trade_lane || ""}
           containerType={selectedLane?.container_type || "40ft"}

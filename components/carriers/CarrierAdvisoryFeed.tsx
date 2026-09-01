@@ -1,7 +1,9 @@
 "use client";
 
 import { CarrierAdvisory } from "@/lib/types";
-import { Clock, Calendar, ExternalLink } from "lucide-react";
+import { Clock, Calendar, ExternalLink, FileText } from "lucide-react";
+import { SeverityBadge } from "@/components/common/SeverityBadge";
+import { EmptyState } from "@/components/common/EmptyState";
 
 type Props = {
   advisories: CarrierAdvisory[];
@@ -22,25 +24,6 @@ export default function CarrierAdvisoryFeed({ advisories }: Props) {
     if (c.includes("evergreen")) return "bg-emerald-600 text-white";
     if (c.includes("one")) return "bg-pink-600 text-white";
     return "bg-slate-800 text-white";
-  };
-  const getSeverityStyle = (severity: string | null | undefined) => {
-    if (!severity) {
-      return "bg-slate-100 text-slate-700 border-slate-200";
-    }
-    const s = severity.toLowerCase();
-    if (s === "elevated") {
-      return "bg-amber-100/90 text-amber-800 border-amber-200/80";
-    }
-    if (s === "advisory") {
-      return "bg-blue-100/90 text-blue-700 border-blue-200/80";
-    }
-    if (s === "critical" || s === "high") {
-      return "bg-red-100/90 text-red-700 border-red-200/80";
-    }
-    if (s === "normal" || s === "low") {
-      return "bg-emerald-100/90 text-emerald-700 border-emerald-200/80";
-    }
-    return "bg-slate-100 text-slate-700 border-slate-200";
   };
 
   // Format type label
@@ -123,6 +106,14 @@ export default function CarrierAdvisoryFeed({ advisories }: Props) {
       </div>
 
       {/* Advisories Stacked Cards */}
+      {sortedAdvisories.length === 0 && (
+        <EmptyState
+          icon={FileText}
+          title="No advisories found"
+          description="No carrier advisories match your current filters. Try widening the carrier or type filter."
+        />
+      )}
+
       <div className="space-y-4">
         {sortedAdvisories.map((advisory) => {
           const avatarColor = getCarrierBadgeColor(advisory.carrier);
@@ -156,13 +147,7 @@ export default function CarrierAdvisoryFeed({ advisories }: Props) {
                 </div>
 
                 {/* Severity Status Pill */}
-                <span
-                  className={`rounded-full border px-3 py-0.5 text-xs font-semibold capitalize ${getSeverityStyle(
-                    advisory.impact_severity,
-                  )}`}
-                >
-                  {advisory.impact_severity}
-                </span>
+                <SeverityBadge severity={advisory.impact_severity} />
               </div>
 
               {/* Title */}

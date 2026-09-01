@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Markdown, { type Components } from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   RouteBriefResponse,
   downloadRouteBriefPdf,
@@ -63,6 +64,30 @@ const MARKDOWN_COMPONENTS: Components = {
     />
   ),
   hr: (props) => <hr className="border-slate-200" {...props} />,
+  del: (props) => <del className="text-slate-400 line-through" {...props} />,
+  // GFM tables: the brief often compares rates/carriers in one, and a wide
+  // table has to scroll inside the card rather than stretch the layout.
+  table: (props) => (
+    <div className="overflow-x-auto">
+      <table
+        className="w-full border-collapse text-left text-sm"
+        {...props}
+      />
+    </div>
+  ),
+  thead: (props) => <thead className="border-b border-slate-200" {...props} />,
+  th: (props) => (
+    <th
+      className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500"
+      {...props}
+    />
+  ),
+  td: (props) => (
+    <td
+      className="border-b border-slate-100 px-3 py-2 align-top text-slate-600"
+      {...props}
+    />
+  ),
 };
 
 const RECOMMENDATION_LABELS: Record<string, string> = {
@@ -151,7 +176,10 @@ export default function RouteBriefResult({ data, onNewBrief }: Props) {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]">
         {/* Left: Markdown content */}
         <div className="rounded-2xl border bg-white p-6 space-y-4">
-          <Markdown components={MARKDOWN_COMPONENTS}>
+          <Markdown
+            remarkPlugins={[remarkGfm]}
+            components={MARKDOWN_COMPONENTS}
+          >
             {data.brief_markdown ?? ""}
           </Markdown>
         </div>

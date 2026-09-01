@@ -94,9 +94,10 @@ export default function PortDetailModal({
         <div className="p-6 bg-slate-900 text-white relative">
           <button
             onClick={onClose}
+            aria-label="Close port details"
             className="absolute top-4 right-4 h-8 w-8 rounded-full bg-white/10 flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/20 transition-colors"
           >
-            <X className="h-4 w-4" />
+            <X className="h-4 w-4" aria-hidden="true" />
           </button>
 
           <div className="flex items-center gap-4">
