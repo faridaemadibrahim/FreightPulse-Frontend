@@ -1,3 +1,4 @@
+import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import Link from "next/link";
 import { ArrowLeft, Calendar, Database, Container } from "lucide-react";
 import { getRateLane, getRateCompare } from "@/lib/api";
@@ -80,11 +81,13 @@ export default async function RateDetailPage({ params }: Props) {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <RateTrendChart
-            data={detail.history}
-            lane={decodedLane}
-            containerType={detail.container_type}
-          />
+          <ErrorBoundary label="The rate trend chart failed to load">
+            <RateTrendChart
+              data={detail.history}
+              lane={decodedLane}
+              containerType={detail.container_type}
+            />
+          </ErrorBoundary>
         </div>
         <div className="lg:col-span-1">
           <RateCompareCard data={compare} lane={decodedLane} />

@@ -9,7 +9,8 @@ import {
   ExternalLink,
   Check,
 } from "lucide-react";
-import { Alert, AlertType, AlertSeverity } from "@/lib/types";
+import { Alert, AlertType } from "@/lib/types";
+import { severityTone } from "@/components/common/SeverityBadge";
 
 type Props = {
   alert: Alert;
@@ -29,25 +30,6 @@ function getAlertIcon(type: AlertType) {
   }
 }
 
-function getSeverityStyles(severity: AlertSeverity) {
-  if (severity === "critical") {
-    return {
-      iconBg: "bg-red-100 text-red-600",
-      badge: "bg-red-100 text-red-700",
-    };
-  }
-  if (severity === "elevated") {
-    return {
-      iconBg: "bg-amber-100 text-amber-600",
-      badge: "bg-amber-100 text-amber-700",
-    };
-  }
-  return {
-    iconBg: "bg-blue-100 text-blue-600",
-    badge: "bg-blue-100 text-blue-700",
-  };
-}
-
 function formatRelativeTime(dateStr: string) {
   const diffHours =
     (Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60);
@@ -61,7 +43,7 @@ function formatRelativeTime(dateStr: string) {
 }
 
 export default function AlertListItem({ alert, onMarkRead }: Props) {
-  const styles = getSeverityStyles(alert.severity);
+  const styles = severityTone(alert.severity);
   const magnitudeColor =
     alert.magnitude_pct !== undefined
       ? alert.magnitude_pct >= 0
@@ -87,7 +69,7 @@ export default function AlertListItem({ alert, onMarkRead }: Props) {
               </span>
             )}
             <span
-              className={`rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize ${styles.badge}`}
+              className={`rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize ${styles.solid}`}
             >
               {alert.severity}
             </span>

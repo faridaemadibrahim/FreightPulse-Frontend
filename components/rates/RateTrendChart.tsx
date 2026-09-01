@@ -20,20 +20,37 @@ interface RateTrendChartProps {
   containerType?: string;
 }
 
-function CustomTooltip({ active, payload, label }: any) {
+// Recharts hands the tooltip an untyped payload; describe just the two fields
+// this component reads rather than widening the whole thing to `any`.
+type TooltipEntry = {
+  dataKey?: string | number;
+  value?: number;
+};
+
+type CustomTooltipProps = {
+  active?: boolean;
+  payload?: TooltipEntry[];
+  label?: string | number;
+};
+
+function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   if (active && payload && payload.length) {
-    let dateStr = label;
-    try {
-      dateStr = new Date(label).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      });
-    } catch {}
+    // Guarding the undefined case matters: `new Date(undefined)` formats as
+    // the literal string "Invalid Date" rather than throwing.
+    let dateStr: string | number = label ?? "";
+    if (label !== undefined) {
+      try {
+        dateStr = new Date(label).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        });
+      } catch {}
+    }
 
     // Extract values matching exact colors
-    const avg30d = payload.find((p: any) => p.dataKey === "avg_30d_usd")?.value;
-    const avg7d = payload.find((p: any) => p.dataKey === "avg_7d_usd")?.value;
-    const currentRate = payload.find((p: any) => p.dataKey === "rate_usd")?.value;
+    const avg30d = payload.find((p) => p.dataKey === "avg_30d_usd")?.value;
+    const avg7d = payload.find((p) => p.dataKey === "avg_7d_usd")?.value;
+    const currentRate = payload.find((p) => p.dataKey === "rate_usd")?.value;
 
     return (
       <div className="bg-white border border-slate-200 shadow-xl rounded-xl p-3.5 min-w-[130px] text-center space-y-1.5">

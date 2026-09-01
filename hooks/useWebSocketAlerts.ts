@@ -10,16 +10,43 @@ const WS_URL =
 
 const MAX_RECONNECT_DELAY = 30000;
 
+// Once the socket has failed this many times in a row, stop trusting it to
+// deliver alerts and start pulling them over REST instead. Reconnection keeps
+// running underneath, so this is a stopgap, not a replacement.
+const FALLBACK_AFTER_FAILURES = 3;
+const FALLBACK_POLL_INTERVAL = 30000;
+
 export function useWebSocketAlerts(userId: string) {
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectDelay = useRef(1000);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const consecutiveFailures = useRef(0);
   const addAlert = useAlertStore((s) => s.addAlert);
+  const fetchAlerts = useAlertStore((s) => s.fetchAlerts);
 
   useEffect(() => {
     if (!userId) return;
 
     let isUnmounted = false;
+
+    function startFallbackPolling() {
+      if (pollTimeoutRef.current || isUnmounted) return;
+      console.warn(
+        `[WebSocket] ${consecutiveFailures.current} consecutive failures — falling back to polling /alerts every ${FALLBACK_POLL_INTERVAL / 1000}s`,
+      );
+      // Pull once straight away so the user isn't left staring at stale data
+      // for a full interval, then keep polling.
+      fetchAlerts();
+      pollTimeoutRef.current = setInterval(fetchAlerts, FALLBACK_POLL_INTERVAL);
+    }
+
+    function stopFallbackPolling() {
+      if (!pollTimeoutRef.current) return;
+      console.log("[WebSocket] Live again — stopping the REST fallback poll");
+      clearInterval(pollTimeoutRef.current);
+      pollTimeoutRef.current = null;
+    }
 
     function connect() {
       if (wsRef.current) {
@@ -42,7 +69,9 @@ export function useWebSocketAlerts(userId: string) {
           return;
         }
         console.log("[WebSocket] Connection established successfully");
-        reconnectDelay.current = 1000; 
+        reconnectDelay.current = 1000;
+        consecutiveFailures.current = 0;
+        stopFallbackPolling();
       };
 
       ws.onmessage = (event) => {
@@ -88,6 +117,11 @@ export function useWebSocketAlerts(userId: string) {
         );
         wsRef.current = null;
 
+        consecutiveFailures.current += 1;
+        if (consecutiveFailures.current >= FALLBACK_AFTER_FAILURES) {
+          startFallbackPolling();
+        }
+
         reconnectTimeoutRef.current = setTimeout(() => {
           reconnectDelay.current = Math.min(
             reconnectDelay.current * 2,
@@ -113,6 +147,7 @@ export function useWebSocketAlerts(userId: string) {
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
       }
+      stopFallbackPolling();
     };
-  }, [userId, addAlert]);
+  }, [userId, addAlert, fetchAlerts]);
 }

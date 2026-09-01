@@ -71,11 +71,23 @@ export default function AlertsBellDropdown() {
     <div className="relative">
       <button
         onClick={handleToggle}
+        // Icon-only control: without an explicit label a screen reader
+        // announces nothing but "button", and the unread dot is decorative.
+        aria-label={
+          unreadCount > 0
+            ? `Alerts, ${unreadCount} unread`
+            : "Alerts, none unread"
+        }
+        aria-expanded={isOpen}
+        aria-haspopup="menu"
         className="relative rounded-lg p-2 hover:bg-muted"
       >
-        <Bell className="h-5 w-5" />
+        <Bell className="h-5 w-5" aria-hidden="true" />
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
+          <span
+            aria-hidden="true"
+            className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"
+          />
         )}
       </button>
 

@@ -7,7 +7,8 @@ import AlertSummaryCards from "./AlertSummaryCards";
 import AlertFilters from "./AlertFilters";
 import AlertListItem from "./AlertListItem";
 import AlertSourcesPanel from "./AlertSourcesPanel";
-import { Check } from "lucide-react";
+import { Check, Bell } from "lucide-react";
+import { EmptyState } from "@/components/common/EmptyState";
 import { toast } from "sonner";
 import { showAlertToast } from "@/lib/toast";
 
@@ -89,9 +90,11 @@ export default function AlertsClient() {
                 />
               ))
             ) : (
-              <div className="rounded-2xl border bg-white p-10 text-center text-sm text-slate-500">
-                No alerts match your filters.
-              </div>
+              <EmptyState
+                icon={Bell}
+                title="No alerts match your filters"
+                description="Try switching the severity or read/unread filter to see more."
+              />
             )}
           </div>
         </div>
