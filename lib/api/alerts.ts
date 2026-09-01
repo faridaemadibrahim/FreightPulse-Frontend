@@ -41,7 +41,7 @@ export async function getAlerts(): Promise<Alert[]> {
   }
 
   try {
-    const response = await apiClient.get("/alerts");
+    const response = await apiClient.get("/alerts/events");
     const data = response.data;
     const apiAlerts: ApiAlert[] = Array.isArray(data)
       ? data

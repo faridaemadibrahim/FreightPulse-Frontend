@@ -10,7 +10,6 @@ export interface RouteBriefRequest {
 // Full record returned by POST /route-briefs
 export interface RouteBriefResponse {
   id: string;
-  user_id: string;
   origin: string;
   destination: string;
   carrier: string;
@@ -18,7 +17,7 @@ export interface RouteBriefResponse {
   brief_markdown: string;
   recommendation: string;
   risk_level: string;
-  pdf_path: string;
+  pdf_available: boolean;
   status: string;
   error_message: string;
   created_at: string;
@@ -58,7 +57,6 @@ export async function requestRouteBrief(
     };
     return {
       id: briefId,
-      user_id: "mock_user",
       origin: req.origin,
       destination: req.destination,
       carrier: req.carrier,
@@ -66,7 +64,7 @@ export async function requestRouteBrief(
       brief_markdown: "",
       recommendation: "",
       risk_level: "",
-      pdf_path: "",
+      pdf_available: false,
       status: "pending",
       error_message: "",
       created_at: new Date().toISOString(),
@@ -87,7 +85,6 @@ export async function getRouteBriefStatus(
     if (brief.ticks < brief.maxTicks) {
       return {
         id: briefId,
-        user_id: "mock_user",
         origin: brief.request.origin,
         destination: brief.request.destination,
         carrier: brief.request.carrier,
@@ -96,7 +93,7 @@ export async function getRouteBriefStatus(
         brief_markdown: "",
         recommendation: "",
         risk_level: "",
-        pdf_path: "",
+        pdf_available: false,
         error_message: "",
         created_at: new Date().toISOString(),
       };
@@ -108,7 +105,6 @@ export async function getRouteBriefStatus(
 
     return {
       id: briefId,
-      user_id: "mock_user",
       origin: brief.request.origin,
       destination: brief.request.destination,
       carrier: brief.request.carrier,
@@ -116,7 +112,7 @@ export async function getRouteBriefStatus(
       status: "completed",
       recommendation: rec,
       risk_level: risk,
-      pdf_path: "",
+      pdf_available: false,
       error_message: "",
       created_at: new Date().toISOString(),
       brief_markdown: `# AI Route Brief: ${brief.request.origin} → ${brief.request.destination}
@@ -151,9 +147,25 @@ ${
   return res.data;
 }
 
+/**
+ * Fetch the full brief record. GET /route-briefs/{id}/status only returns
+ * { id, status } — the markdown, recommendation and risk_level live on
+ * GET /route-briefs/{id}, so poll the former and fetch this once completed.
+ */
+export async function getRouteBrief(
+  briefId: string,
+): Promise<RouteBriefResponse> {
+  if (isMockMode()) {
+    const mock = getRouteBriefMock(briefId);
+    if (mock) return mock;
+  }
+
+  const res = await apiClient.get(`/route-briefs/${briefId}`);
+  return res.data;
+}
+
 // Mock-only helper: builds the full mock brief content once status
-// reaches "completed". Real backend equivalent still TBD (see
-// RouteBriefClient TODO — no confirmed endpoint to re-fetch full content).
+// reaches "completed". The live equivalent is getRouteBrief() above.
 export function getRouteBriefMock(briefId: string): RouteBriefResponse | null {
   const brief = simulatedBriefs[briefId];
   if (!brief) return null;
@@ -163,7 +175,6 @@ export function getRouteBriefMock(briefId: string): RouteBriefResponse | null {
 
   return {
     id: briefId,
-    user_id: "mock_user",
     origin: brief.request.origin,
     destination: brief.request.destination,
     carrier: brief.request.carrier,
@@ -171,7 +182,7 @@ export function getRouteBriefMock(briefId: string): RouteBriefResponse | null {
     status: "completed",
     recommendation: rec,
     risk_level: risk,
-    pdf_path: "",
+    pdf_available: false,
     error_message: "",
     created_at: new Date().toISOString(),
     brief_markdown: `# AI Route Brief: ${brief.request.origin} → ${brief.request.destination}
@@ -200,4 +211,13 @@ ${
 }
 `,
   };
+}
+
+// The PDF endpoint is authenticated, so a plain <a href> would be rejected —
+// pull it through the API client and hand the browser a blob instead.
+export async function downloadRouteBriefPdf(briefId: string): Promise<Blob> {
+  const res = await apiClient.get(`/route-briefs/${briefId}/pdf`, {
+    responseType: "blob",
+  });
+  return res.data as Blob;
 }
