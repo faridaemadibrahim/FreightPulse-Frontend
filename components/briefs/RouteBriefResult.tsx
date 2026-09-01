@@ -1,11 +1,68 @@
 "use client";
 
-import { RouteBriefResponse } from "@/lib/api/route-brief";
+import { useState } from "react";
+import Markdown, { type Components } from "react-markdown";
+import {
+  RouteBriefResponse,
+  downloadRouteBriefPdf,
+} from "@/lib/api/route-brief";
 import { CheckCircle2, Download, RotateCcw } from "lucide-react";
 
 type Props = {
   data: RouteBriefResponse;
   onNewBrief: () => void;
+};
+
+// The brief is AI-generated markdown, so render every element we might get
+// back rather than the handful a hand-rolled parser can cover.
+const MARKDOWN_COMPONENTS: Components = {
+  h1: (props) => (
+    <h1
+      className="text-2xl font-bold tracking-tight text-slate-900 border-b pb-2"
+      {...props}
+    />
+  ),
+  h2: (props) => (
+    <h2 className="pt-2 text-lg font-bold text-slate-900" {...props} />
+  ),
+  h3: (props) => (
+    <h3 className="pt-1 text-base font-semibold text-slate-900" {...props} />
+  ),
+  p: (props) => (
+    <p className="text-sm leading-relaxed text-slate-600" {...props} />
+  ),
+  ul: (props) => (
+    <ul className="list-disc space-y-1.5 pl-5 text-slate-600" {...props} />
+  ),
+  ol: (props) => (
+    <ol className="list-decimal space-y-1.5 pl-5 text-slate-600" {...props} />
+  ),
+  li: (props) => <li className="text-sm leading-relaxed" {...props} />,
+  strong: (props) => (
+    <strong className="font-semibold text-slate-900" {...props} />
+  ),
+  em: (props) => <em className="italic" {...props} />,
+  a: (props) => (
+    <a
+      className="font-medium text-blue-600 underline underline-offset-2 hover:text-blue-700"
+      target="_blank"
+      rel="noopener noreferrer"
+      {...props}
+    />
+  ),
+  code: (props) => (
+    <code
+      className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[13px] text-slate-800"
+      {...props}
+    />
+  ),
+  blockquote: (props) => (
+    <blockquote
+      className="border-l-2 border-slate-200 pl-4 text-sm italic text-slate-500"
+      {...props}
+    />
+  ),
+  hr: (props) => <hr className="border-slate-200" {...props} />,
 };
 
 const RECOMMENDATION_LABELS: Record<string, string> = {
@@ -21,19 +78,33 @@ const RISK_LABELS: Record<string, string> = {
 };
 
 export default function RouteBriefResult({ data, onNewBrief }: Props) {
+  const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+
+  const handleDownloadPdf = async () => {
+    setDownloading(true);
+    setDownloadError(null);
+    try {
+      const blob = await downloadRouteBriefPdf(data.id);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `route-brief-${data.origin}-${data.destination}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      setDownloadError("Could not download the PDF. Please try again.");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <span className="flex items-center gap-1.5 text-xs font-semibold text-blue-600">
-            ✨ AI route intelligence
-          </span>
-          <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-900">
-            Route Brief
-          </h1>
-        </div>
-
+      {/* The page already renders the "Route Brief" heading above this. */}
+      <div className="flex justify-end">
         <button
           onClick={onNewBrief}
           className="flex shrink-0 items-center gap-1.5 rounded-lg border bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
@@ -58,16 +129,21 @@ export default function RouteBriefResult({ data, onNewBrief }: Props) {
           </div>
         </div>
 
-        {data.pdf_path && (
-          <a
-            href={data.pdf_path}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50"
-          >
-            <Download className="h-4 w-4" />
-            Download PDF
-          </a>
+        {data.pdf_available && (
+          <div className="flex flex-col items-end gap-1">
+            <button
+              type="button"
+              onClick={handleDownloadPdf}
+              disabled={downloading}
+              className="flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 disabled:opacity-60"
+            >
+              <Download className="h-4 w-4" />
+              {downloading ? "Preparing…" : "Download PDF"}
+            </button>
+            {downloadError && (
+              <p className="text-xs text-red-600">{downloadError}</p>
+            )}
+          </div>
         )}
       </div>
 
@@ -75,44 +151,9 @@ export default function RouteBriefResult({ data, onNewBrief }: Props) {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]">
         {/* Left: Markdown content */}
         <div className="rounded-2xl border bg-white p-6 space-y-4">
-          {data.brief_markdown.split("\n\n").map((paragraph, index) => {
-            if (paragraph.startsWith("# ")) {
-              return (
-                <h1
-                  key={index}
-                  className="text-2xl font-bold text-slate-900 border-b pb-2"
-                >
-                  {paragraph.replace("# ", "")}
-                </h1>
-              );
-            }
-            if (paragraph.startsWith("## ")) {
-              return (
-                <h2
-                  key={index}
-                  className="text-lg font-bold text-slate-900 pt-2"
-                >
-                  {paragraph.replace("## ", "")}
-                </h2>
-              );
-            }
-            if (paragraph.startsWith("- ")) {
-              return (
-                <ul key={index} className="list-disc pl-5 space-y-1.5">
-                  {paragraph.split("\n").map((li, i) => (
-                    <li key={i} className="text-sm text-slate-600">
-                      {li.replace(/^- /, "")}
-                    </li>
-                  ))}
-                </ul>
-              );
-            }
-            return (
-              <p key={index} className="text-sm leading-relaxed text-slate-600">
-                {paragraph}
-              </p>
-            );
-          })}
+          <Markdown components={MARKDOWN_COMPONENTS}>
+            {data.brief_markdown ?? ""}
+          </Markdown>
         </div>
 
         {/* Right: Sidebar summary */}

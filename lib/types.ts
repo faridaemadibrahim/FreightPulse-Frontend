@@ -184,7 +184,6 @@ export interface RouteBriefRequest {
 
 export interface RouteBriefResponse {
   id: string;
-  user_id: string;
   origin: string;
   destination: string;
   carrier: string;
@@ -192,7 +191,7 @@ export interface RouteBriefResponse {
   brief_markdown: string;
   recommendation: string;
   risk_level: string;
-  pdf_path: string;
+  pdf_available: boolean;
   status: string;
   error_message: string;
   created_at: string;

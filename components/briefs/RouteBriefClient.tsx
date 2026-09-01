@@ -10,6 +10,7 @@ import RouteBriefResult from "./RouteBriefResult";
 import {
   requestRouteBrief,
   getRouteBriefStatus,
+  getRouteBrief,
   RouteBriefRequest,
   RouteBriefResponse,
 } from "@/lib/api/route-brief";
@@ -56,11 +57,11 @@ export default function RouteBriefClient({
     try {
       const response = await requestRouteBrief(request);
 
-      // The backend may return the completed brief directly in the POST
-      // response (no polling needed), or a "pending" record that requires
-      // polling /status until brief_markdown etc. are filled in.
+      // The backend normally returns a "pending" record that requires polling
+      // /status. If it ever comes back already completed, the POST response
+      // still only carries { id, status }, so fetch the full record.
       if (response.status === "completed") {
-        setResult(response);
+        setResult(await getRouteBrief(response.id));
         setStep("result");
       } else {
         startPolling(response.id);
@@ -108,9 +109,9 @@ export default function RouteBriefClient({
         if (data.status === "completed") {
           if (pollingIntervalRef.current)
             clearInterval(pollingIntervalRef.current);
-          // /status now returns the full record (brief_markdown,
-          // recommendation, risk_level included), so we can use it directly.
-          setResult(data);
+          // /status only carries { id, status } — fetch the full record so
+          // brief_markdown, recommendation and risk_level are populated.
+          setResult(await getRouteBrief(id));
           setStep("result");
         } else if (data.status === "failed") {
           if (pollingIntervalRef.current)

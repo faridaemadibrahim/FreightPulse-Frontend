@@ -42,7 +42,7 @@ export function useWebSocketAlerts(userId: string) {
           return;
         }
         console.log("[WebSocket] Connection established successfully");
-        reconnectDelay.current = 1000; // إعادة تعيين التأخير عند نجاح الاتصال
+        reconnectDelay.current = 1000; 
       };
 
       ws.onmessage = (event) => {
