@@ -1,10 +1,11 @@
-import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { DashboardData } from "@/lib/types";
 import SummaryCards from "./SummaryCards";
-import PortCongestionChart from "./PortCongestionChart";
 import TrackedLanesList from "./TrackedLanesList";
 import RecentAlertsList from "./RecentAlertsList";
-import DashboardRateTrendChart from "./DashboardRateTrendChart";
+import {
+  DashboardRateTrendChartLazy,
+  PortCongestionChartLazy,
+} from "./DashboardChartsLazy";
 export default function DashboardClient({
   initialData,
 }: {
@@ -23,13 +24,9 @@ export default function DashboardClient({
       <SummaryCards initialData={initialData} />
       <div className="grid gap-4 lg:grid-cols-2">
         {/* هنحط هنا الـ Rate Trend chart لاحقًا */}
-        <ErrorBoundary label="The rate trend chart failed to load">
-          <DashboardRateTrendChart data={initialData.rate_trend_30d} />
-        </ErrorBoundary>
+        <DashboardRateTrendChartLazy data={initialData.rate_trend_30d} />
 
-        <ErrorBoundary label="The port congestion chart failed to load">
-          <PortCongestionChart ports={initialData.port_congestion_overview} />
-        </ErrorBoundary>
+        <PortCongestionChartLazy ports={initialData.port_congestion_overview} />
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
         <TrackedLanesList lanes={initialData.lanes_summary} />

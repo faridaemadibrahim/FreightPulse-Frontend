@@ -1,36 +1,107 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FreightPulse — Frontend
 
-## Getting Started
+AI-powered freight & logistics intelligence dashboard for MENA. Tracks shipping
+rates, port congestion and carrier advisories, pushes real-time alerts over
+WebSocket, and renders AI-generated route intelligence briefs.
 
-First, run the development server:
+Built with Next.js (App Router) + TypeScript + Tailwind + shadcn/ui, Recharts
+for charts, react-leaflet for the port map, and Zustand for alert state.
+
+## Requirements
+
+- Node.js 20+
+- The FreightPulse backend running and reachable (see [Backend](#backend))
+
+## Getting started
 
 ```bash
+npm install
+cp .env.example .env      # then fill in the values below
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app runs at http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Required | What it does |
+|---|---|---|
+| `NEXT_PUBLIC_API_URL` | server-side only | Base REST URL, e.g. `http://localhost:8000/api/v1`. In the browser the app calls the relative `/api/v1` instead and lets the rewrite below proxy it, which avoids CORS preflight. |
+| `NEXT_PUBLIC_WS_URL` | yes | Alerts socket, e.g. `ws://localhost:8000/api/v1/ws/alerts` |
+| `NEXT_PUBLIC_API_KEY` | yes | Sent as the `X-API-Key` header on every request |
+| `NEXT_PUBLIC_USER_ID` | yes | **Must be the UUID that owns the API key** — the backend rejects a non-UUID user id with a 403 during WebSocket auth |
+| `NEXT_PUBLIC_USE_MOCKS` | no | `true` serves the fixtures in `mocks/` instead of calling the backend |
+| `INTERNAL_BACKEND_URL` | no | Proxy target for the `/api/v1/*` rewrite (default `http://localhost:8000`) |
 
-## Learn More
+Everything prefixed `NEXT_PUBLIC_` is embedded in the client bundle — never put
+a secret there.
 
-To learn more about Next.js, take a look at the following resources:
+## Backend
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Browser requests go to the relative `/api/v1`, which
+[`next.config.ts`](next.config.ts) rewrites to `INTERNAL_BACKEND_URL`. Server
+components call the backend directly using `NEXT_PUBLIC_API_URL`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+If pages render but every panel is empty, check the backend first:
 
-## Deploy on Vercel
+```bash
+curl -H "X-API-Key: $NEXT_PUBLIC_API_KEY" http://localhost:8000/api/v1/carriers
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+With no backend available, set `NEXT_PUBLIC_USE_MOCKS=true` to work off the
+fixtures in `mocks/`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Scripts
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Development server |
+| `npm run build` | Production build |
+| `npm start` | Serve a production build |
+| `npm run lint` | ESLint |
+| `npm test` | Jest + React Testing Library |
+| `npm run test:watch` | Jest in watch mode |
+| `npm run test:e2e` | Playwright end-to-end tests |
+
+## Project layout
+
+```
+app/            Routes (dashboard, rates, ports, carriers, route-brief, alerts)
+                plus error.tsx / global-error.tsx / loading.tsx boundaries
+components/
+  common/       Shared primitives: SeverityBadge, EmptyState, LoadingSpinner,
+                ErrorBoundary
+  ui/           shadcn/ui components (generated — avoid hand-editing)
+hooks/          useWebSocketAlerts (live alerts + reconnect + REST fallback)
+stores/         Zustand alert store
+lib/api/        REST client, one module per resource
+mocks/          JSON fixtures for NEXT_PUBLIC_USE_MOCKS
+__tests__/      Jest unit/component tests
+e2e/            Playwright specs
+```
+
+## Real-time alerts
+
+`useWebSocketAlerts` connects on app load and reconnects with exponential
+backoff (1s → 30s cap). After three consecutive failures it falls back to
+polling `/alerts` every 30 seconds until the socket recovers, so a flaky or
+down backend degrades instead of silently going stale.
+
+## Testing
+
+```bash
+npm test              # unit + component
+npm run test:e2e      # end-to-end (needs the app running or lets Playwright start it)
+```
+
+## Deployment
+
+Deploys to Vercel with no extra configuration. Set the environment variables
+above in the Vercel dashboard.
+
+A [`Dockerfile`](Dockerfile) is included as an alternative:
+
+```bash
+docker build -t freightpulse-frontend .
+docker run -p 3000:3000 --env-file .env freightpulse-frontend
+```

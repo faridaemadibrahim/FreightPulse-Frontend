@@ -1,12 +1,11 @@
 "use client";
 
-import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { useState, useMemo, useEffect } from "react";
 import { MousePointerClick } from "lucide-react";
 import { LaneSummary, RateCompareData, RatePoint } from "@/lib/types";
 import RateOverviewTable from "./RateOverviewTable";
 import RateCompareCard from "./RateCompareCard";
-import RateTrendChart from "./RateTrendChart";
+import RateTrendChartLazy from "./RateTrendChartLazy";
 import RateFilters from "./RateFilters";
 import { getRateCompare, getRateLane } from "@/lib/api";
 
@@ -107,13 +106,11 @@ export default function RatesClient({ initialLanes }: RatesClientProps) {
 
       {/* Bottom Chart: Full Width 30-Day Rate Trend Chart */}
       <div className="w-full pt-2">
-        <ErrorBoundary label="The rate trend chart failed to load">
-          <RateTrendChart
-            data={historyData.length > 0 ? historyData : undefined}
-            lane={selectedLane?.trade_lane || ""}
-            containerType={selectedLane?.container_type || "40ft"}
-          />
-        </ErrorBoundary>
+        <RateTrendChartLazy
+          data={historyData.length > 0 ? historyData : undefined}
+          lane={selectedLane?.trade_lane || ""}
+          containerType={selectedLane?.container_type || "40ft"}
+        />
       </div>
     </div>
   );
