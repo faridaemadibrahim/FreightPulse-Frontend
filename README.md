@@ -7,6 +7,8 @@ WebSocket, and renders AI-generated route intelligence briefs.
 Built with Next.js (App Router) + TypeScript + Tailwind + shadcn/ui, Recharts
 for charts, react-leaflet for the port map, and Zustand for alert state.
 
+**Live:** https://freight-pulse-frontend.vercel.app
+
 ## Requirements
 
 - Node.js 20+
@@ -96,8 +98,18 @@ npm run test:e2e      # end-to-end (needs the app running or lets Playwright sta
 
 ## Deployment
 
-Deploys to Vercel with no extra configuration. Set the environment variables
-above in the Vercel dashboard.
+Deployed on Vercel at https://freight-pulse-frontend.vercel.app — pushes to
+the default branch redeploy it automatically.
+
+No extra configuration is needed beyond setting the environment variables
+above in the Vercel dashboard. Two of them decide whether the deployment can
+reach any data at all:
+
+- `NEXT_PUBLIC_API_URL` and `NEXT_PUBLIC_WS_URL` must point at a **publicly
+  reachable** backend. A `localhost` value works locally but leaves every
+  panel on the deployed site empty.
+- `NEXT_PUBLIC_*` values are baked in at build time, so changing one in the
+  dashboard requires a redeploy to take effect.
 
 A [`Dockerfile`](Dockerfile) is included as an alternative:
 
