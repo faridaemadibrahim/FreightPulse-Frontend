@@ -106,6 +106,62 @@ describe("AlertsBellDropdown", () => {
     expect(bell).toHaveAttribute("aria-expanded", "true");
   });
 
+  it("closes on a click outside and marks the alerts read", async () => {
+    useAlertStore.setState({ alerts: [makeAlert()] });
+    render(
+      <div>
+        <AlertsBellDropdown />
+        <button>somewhere else</button>
+      </div>,
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: /^Alerts, / }));
+    expect(screen.getByRole("region", { name: "Alerts" })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "somewhere else" }));
+
+    expect(screen.queryByRole("region", { name: "Alerts" })).not.toBeInTheDocument();
+    expect(markAllAsRead).toHaveBeenCalledTimes(1);
+  });
+
+  it("stays open when clicking inside the panel", async () => {
+    useAlertStore.setState({ alerts: [makeAlert()] });
+    render(<AlertsBellDropdown />);
+
+    await userEvent.click(screen.getByRole("button", { name: /^Alerts, / }));
+    await userEvent.click(screen.getByText("Rate spike detected"));
+
+    expect(screen.getByRole("region", { name: "Alerts" })).toBeInTheDocument();
+    expect(markAllAsRead).not.toHaveBeenCalled();
+  });
+
+  it("closes on Escape and returns focus to the bell", async () => {
+    useAlertStore.setState({ alerts: [makeAlert()] });
+    render(<AlertsBellDropdown />);
+    const bell = screen.getByRole("button", { name: /^Alerts, / });
+
+    await userEvent.click(bell);
+    await userEvent.keyboard("{Escape}");
+
+    expect(screen.queryByRole("region", { name: "Alerts" })).not.toBeInTheDocument();
+    expect(markAllAsRead).toHaveBeenCalledTimes(1);
+    expect(bell).toHaveFocus();
+  });
+
+  it("points aria-controls at the panel only while it is open", async () => {
+    render(<AlertsBellDropdown />);
+    const bell = screen.getByRole("button", { name: /^Alerts, / });
+
+    expect(bell).not.toHaveAttribute("aria-controls");
+    // The panel is a read-only list, so it must not claim to be a menu.
+    expect(bell).not.toHaveAttribute("aria-haspopup");
+
+    await userEvent.click(bell);
+
+    const panel = screen.getByRole("region", { name: "Alerts" });
+    expect(bell).toHaveAttribute("aria-controls", panel.id);
+  });
+
   it("marks alerts read on close, not on open", async () => {
     useAlertStore.setState({ alerts: [makeAlert()] });
     render(<AlertsBellDropdown />);

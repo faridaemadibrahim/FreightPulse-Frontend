@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback, useId } from "react";
 import {
   Bell,
   TrendingUp,
@@ -46,6 +46,9 @@ function formatRelativeTime(dateStr: string) {
 
 export default function AlertsBellDropdown() {
   const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const bellRef = useRef<HTMLButtonElement>(null);
+  const panelId = useId();
   const alerts = useAlertStore((s) => s.alerts);
   const isLoading = useAlertStore((s) => s.isLoading);
   const markAllAsRead = useAlertStore((s) => s.markAllAsRead);
@@ -58,18 +61,52 @@ export default function AlertsBellDropdown() {
   // really looked at yet, and would also mark any alert that arrives via
   // WebSocket WHILE the dropdown happens to be open, before the user had
   // a chance to notice it.
-  const handleToggle = () => {
-    const wasOpen = isOpen;
-    setIsOpen((prev) => !prev);
-
-    if (wasOpen) {
+  const closePanel = useCallback(
+    ({ refocus }: { refocus: boolean }) => {
+      setIsOpen(false);
       markAllAsRead();
+      // Escape should hand focus back to the trigger; a click elsewhere
+      // shouldn't steal it from whatever the user just clicked.
+      if (refocus) bellRef.current?.focus();
+    },
+    [markAllAsRead],
+  );
+
+  const handleToggle = () => {
+    if (isOpen) {
+      closePanel({ refocus: false });
+    } else {
+      setIsOpen(true);
     }
   };
 
+  // Without these the panel could only be dismissed by clicking the bell
+  // again — and since closing is what marks alerts read, clicking away left
+  // them unread forever.
+  useEffect(() => {
+    if (!isOpen) return;
+
+    function handlePointerDown(event: MouseEvent) {
+      if (containerRef.current?.contains(event.target as Node)) return;
+      closePanel({ refocus: false });
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") closePanel({ refocus: true });
+    }
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, closePanel]);
+
   return (
-    <div className="relative">
+    <div ref={containerRef} className="relative">
       <button
+        ref={bellRef}
         onClick={handleToggle}
         // Icon-only control: without an explicit label a screen reader
         // announces nothing but "button", and the unread dot is decorative.
@@ -79,7 +116,9 @@ export default function AlertsBellDropdown() {
             : "Alerts, none unread"
         }
         aria-expanded={isOpen}
-        aria-haspopup="menu"
+        // Deliberately not aria-haspopup="menu": the panel is a read-only
+        // list, not a menu of commands, so it has no menuitems to navigate.
+        aria-controls={isOpen ? panelId : undefined}
         className="relative rounded-lg p-2 hover:bg-muted"
       >
         <Bell className="h-5 w-5" aria-hidden="true" />
@@ -92,7 +131,12 @@ export default function AlertsBellDropdown() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-80 rounded-xl border bg-white shadow-lg z-50">
+        <div
+          id={panelId}
+          role="region"
+          aria-label="Alerts"
+          className="absolute right-0 top-full mt-2 w-80 rounded-xl border bg-white shadow-lg z-50"
+        >
           {/* Header */}
           <div className="flex items-center justify-between border-b px-4 py-3">
             <span className="font-semibold text-sm text-slate-900">Alerts</span>
