@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   TrendingUp,
@@ -32,8 +33,17 @@ const items = [
   { title: "Alerts", href: "/alerts", icon: Bell },
 ];
 
+// "/" would prefix-match every route, so it only counts as active on an exact
+// match. The rest stay active on their sub-routes too, e.g. /rates/Shanghai-Europe
+// keeps "Rates" highlighted.
+function isCurrent(pathname: string, href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export function AppSidebar() {
   const { setOpenMobile } = useSidebar();
+  const pathname = usePathname();
 
   return (
     <Sidebar>
@@ -58,17 +68,25 @@ export function AppSidebar() {
         <SidebarGroup className="px-2 py-0">
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    render={<Link href={item.href} />}
-                    onClick={() => setOpenMobile(false)}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.title}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {items.map((item) => {
+                const active = isCurrent(pathname, item.href);
+
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      isActive={active}
+                      // Colour alone shouldn't be the only cue, and it also
+                      // tells a screen reader which page it is on.
+                      aria-current={active ? "page" : undefined}
+                      render={<Link href={item.href} />}
+                      onClick={() => setOpenMobile(false)}
+                    >
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.title}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
