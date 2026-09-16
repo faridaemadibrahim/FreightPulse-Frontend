@@ -11,18 +11,15 @@ const CASES = [
   // to Dashboard.
   { path: "/rates/Shanghai-Europe", active: "Rates" },
 ];
-
 test.describe("sidebar current page", () => {
   for (const { path, active } of CASES) {
     test(`marks ${active} on ${path}`, async ({ page }) => {
       await page.goto(path);
-
       const current = page.locator('[data-slot="sidebar"] a[aria-current="page"]');
       await expect(current).toHaveCount(1);
       await expect(current).toContainText(active);
     });
   }
-
   test("moves the marker as you navigate", async ({ page }) => {
     await page.goto("/");
     const current = page.locator('[data-slot="sidebar"] a[aria-current="page"]');

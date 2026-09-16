@@ -15,7 +15,7 @@ export function AlertsProvider({ children }: { children: ReactNode }) {
   // Connect WebSocket for real-time notifications.
   // Must be the UUID that owns NEXT_PUBLIC_API_KEY — the backend rejects
   // non-UUID user ids with a 403 during WebSocket auth.
-  useWebSocketAlerts(process.env.NEXT_PUBLIC_USER_ID || "");
+  useWebSocketAlerts(process.env.USER_ID || "");
 
   return <>{children}</>;
 }
