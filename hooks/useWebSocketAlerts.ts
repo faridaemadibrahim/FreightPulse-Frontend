@@ -5,8 +5,7 @@ import { useAlertStore } from "@/stores/alertStore";
 import { showAlertToast } from "@/lib/toast";
 import { Alert } from "@/lib/types";
 
-const WS_URL =
-  process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000/api/v1/ws/alerts";
+const WS_URL = process.env.WS_URL || "ws://localhost:8000/api/v1/ws/alerts";
 
 const MAX_RECONNECT_DELAY = 30000;
 
