@@ -67,7 +67,7 @@ export async function markAlertAsRead(alertId: string): Promise<void> {
   }
 
   try {
-    await apiClient.patch(`/alerts/${alertId}/read`);
+    await apiClient.post(`/alerts/events/${alertId}/read`);
   } catch (error: unknown) {
     const err = error as {
       response?: { status: number; statusText: string };
