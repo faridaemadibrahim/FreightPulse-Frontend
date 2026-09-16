@@ -58,13 +58,27 @@ export function useWebSocketAlerts(userId: string) {
         clearTimeout(reconnectTimeoutRef.current);
       }
 
+      // If running on HTTPS (e.g. Vercel) and the WS endpoint is an insecure remote IP/WS (no SSL),
+      // browsers will block ws:// as Mixed Content and wss:// will fail with SSL protocol error.
+      // In this case, cleanly switch to REST polling without generating browser console errors.
+      const isHttps =
+        typeof window !== "undefined" && window.location.protocol === "https:";
+      const isInsecureRemote =
+        WS_URL.startsWith("ws://") &&
+        !WS_URL.includes("localhost") &&
+        !WS_URL.includes("127.0.0.1");
+
+      if (isHttps && isInsecureRemote) {
+        console.info(
+          "[WebSocket] HTTPS environment detected with insecure WS endpoint — using REST polling fallback for live alerts.",
+        );
+        startFallbackPolling();
+        return;
+      }
+
       const apiKey = process.env.NEXT_PUBLIC_API_KEY || "dev-api-key";
       let url = `${WS_URL}/${encodeURIComponent(userId)}?api_key=${encodeURIComponent(apiKey)}`;
-      if (
-        typeof window !== "undefined" &&
-        window.location.protocol === "https:" &&
-        url.startsWith("ws://")
-      ) {
+      if (isHttps && url.startsWith("ws://")) {
         url = url.replace(/^ws:\/\//, "wss://");
       }
       console.log(`[WebSocket] Connecting to ${url}`);
