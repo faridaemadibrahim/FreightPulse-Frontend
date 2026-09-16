@@ -8,7 +8,8 @@ export const getApiBase = () => {
   return process.env.API_URL || "http://localhost:8000/api/v1";
 };
 
-export const getApiKey = () => process.env.API_KEY || "dev-api-key";
+export const getApiKey = () =>
+  process.env.NEXT_PUBLIC_API_KEY || process.env.API_KEY || "dev-api-key";
 
 export const isMockMode = () => process.env.NEXT_PUBLIC_USE_MOCKS === "true";
 
