@@ -59,10 +59,27 @@ export function useWebSocketAlerts(userId: string) {
       }
 
       const apiKey = process.env.NEXT_PUBLIC_API_KEY || "dev-api-key";
-      const url = `${WS_URL}/${encodeURIComponent(userId)}?api_key=${encodeURIComponent(apiKey)}`;
+      let url = `${WS_URL}/${encodeURIComponent(userId)}?api_key=${encodeURIComponent(apiKey)}`;
+      if (
+        typeof window !== "undefined" &&
+        window.location.protocol === "https:" &&
+        url.startsWith("ws://")
+      ) {
+        url = url.replace(/^ws:\/\//, "wss://");
+      }
       console.log(`[WebSocket] Connecting to ${url}`);
 
-      const ws = new WebSocket(url);
+      let ws: WebSocket;
+      try {
+        ws = new WebSocket(url);
+      } catch (err) {
+        console.warn(
+          "[WebSocket] Insecure WebSocket blocked or failed to initialize — falling back to polling /alerts:",
+          err,
+        );
+        startFallbackPolling();
+        return;
+      }
       wsRef.current = ws;
 
       ws.onopen = () => {
